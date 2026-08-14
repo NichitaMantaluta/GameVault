@@ -1,6 +1,12 @@
 @GameStore.Api_HostAddress = http://localhost:5261
 
-GET {{GameStore.Api_HostAddress}}/weatherforecast/
-Accept: application/json
+### Create game
+POST {{GameStore.Api_HostAddress}}/api/games
+Content-Type: application/json
 
-###
+{
+  "name": "Super Mario Bros. 3",
+  "description": "A classic platform game.",
+  "price": 19.99,
+  "genreId": 10
+}

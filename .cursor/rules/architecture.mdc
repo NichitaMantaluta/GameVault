@@ -1,0 +1,29 @@
+---
+description: GameStore stack, project boundaries, and vertical-slice layout
+alwaysApply: true
+---
+
+# GameStore Architecture
+
+This is an ASP.NET Core GameStore modular monolith using **Vertical Slice Architecture**.
+
+## Projects
+
+- `GameStore.Api` — HTTP/application use cases (features organized by use case)
+- `GameStore.Worker` — asynchronous order processing only
+- Frontend — React + TypeScript (when present)
+- Do not reorganize into Clean Architecture or Controller/Service/Repository layers
+
+## Tech stack
+
+- PostgreSQL + EF Core
+- Keycloak locally; Entra ID in Azure
+- Stripe for payments
+- Azure Blob Storage for game images
+- Azure Service Bus for asynchronous messaging
+
+## Backend layout
+
+- Use cases live under `Features/{Area}/{UseCase}/`
+- Keep domain types under `Domain/`, persistence under `Persistence/`, integrations under `Integrations/`
+- Keep unrelated features isolated; do not share code across slices unless there is a clear, current need

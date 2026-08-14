@@ -1,0 +1,14 @@
+---
+description: Keep GameStore changes simple, slice-based, and scoped to the request
+alwaysApply: true
+---
+
+# Development Principles
+
+- Prefer simple solutions that solve the requested problem.
+- Do not introduce unnecessary abstractions.
+- Do not create generic repositories, unit-of-work wrappers, or service layers just for architecture.
+- Organize backend functionality by use case / vertical slice.
+- Keep unrelated features isolated.
+- Do not implement future features, placeholders for unexpected work, or speculative endpoints unless explicitly asked.
+- Add packages, infrastructure, or cross-cutting concerns only when required by the current task.

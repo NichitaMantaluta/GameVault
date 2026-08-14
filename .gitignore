@@ -1,0 +1,91 @@
+## .NET
+bin/
+obj/
+out/
+*.user
+*.userosscache
+*.suo
+*.userprefs
+*.dbmdl
+*.jfm
+project.lock.json
+project.fragment.lock.json
+artifacts/
+TestResults/
+[Bb]uild[Ll]og.*
+*.binlog
+
+## NuGet
+*.nupkg
+**/[Pp]ackages/*
+!**/[Pp]ackages/build/
+*.nuget.props
+*.nuget.targets
+
+## Secrets / local config
+.env
+.env.*
+**/appsettings.*.local.json
+**/appsettings.Local.json
+**/secrets.json
+**/Secrets.json
+
+## ASP.NET user secrets are stored outside the repo by default;
+## keep any accidental local copies out of git:
+**/Properties/SecretManager/**
+
+## IDE / editors
+.vs/
+.idea/
+*.swp
+*~
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+## VS Code / Cursor — keep shared settings, ignore local noise
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+!.vscode/tasks.json
+!.vscode/launch.json
+.cursor/plans/
+.cursor/*.log
+
+## Logs & temp
+*.log
+logs/
+tmp/
+temp/
+*.tmp
+*.temp
+
+## Coverage / test tooling
+coverage/
+*.coverage
+*.coveragexml
+TestResults/
+
+## Frontend (when added)
+node_modules/
+dist/
+build/
+.next/
+.nuxt/
+.turbo/
+*.tsbuildinfo
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+## Docker / local volumes
+*.pem
+*.key
+*.crt
+docker-compose.override.yml
+
+## OS junk
+ehthumbs.db
+[Dd]esktop.ini
+$RECYCLE.BIN/
