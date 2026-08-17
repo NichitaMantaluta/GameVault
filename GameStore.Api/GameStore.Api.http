@@ -16,3 +16,14 @@ GET {{GameStore.Api_HostAddress}}/api/games/faeaabf8-87a2-4e24-bcee-01b24e6668a1
 
 ### Get games
 GET {{GameStore.Api_HostAddress}}/api/games?page=1&pageSize=12&search=mario
+
+### Update game
+PUT {{GameStore.Api_HostAddress}}/api/games/faeaabf8-87a2-4e24-bcee-01b24e6668a1
+Content-Type: application/json
+
+{
+  "name": "Celeste",
+  "description": "A precise and emotional mountain-climbing platformer.",
+  "price": 29.99,
+  "genreId": 10
+}
