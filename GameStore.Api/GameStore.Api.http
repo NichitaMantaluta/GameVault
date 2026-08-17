@@ -13,3 +13,6 @@ Content-Type: application/json
 
 ### Get game
 GET {{GameStore.Api_HostAddress}}/api/games/faeaabf8-87a2-4e24-bcee-01b24e6668a1
+
+### Get games
+GET {{GameStore.Api_HostAddress}}/api/games?page=1&pageSize=12&search=mario
