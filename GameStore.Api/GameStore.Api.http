@@ -10,3 +10,6 @@ Content-Type: application/json
   "price": 19.99,
   "genreId": 10
 }
+
+### Get game
+GET {{GameStore.Api_HostAddress}}/api/games/faeaabf8-87a2-4e24-bcee-01b24e6668a1

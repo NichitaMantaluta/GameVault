@@ -1,4 +1,5 @@
 using GameStore.Api.Features.Games.CreateGame;
+using GameStore.Api.Features.Games.GetGame;
 using GameStore.Api.Persistence;
 using Microsoft.EntityFrameworkCore;
 
@@ -25,6 +26,7 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.MapCreateGame();
+app.MapGetGame();
 
 app.Run();
 
