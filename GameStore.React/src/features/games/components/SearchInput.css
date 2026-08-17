@@ -1,0 +1,27 @@
+.search-input {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  width: min(100%, 28rem);
+}
+
+.search-input__label {
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.search-input__field {
+  width: 100%;
+  padding: 0.7rem 0.85rem;
+  color: var(--text);
+  font: inherit;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.search-input__field:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
