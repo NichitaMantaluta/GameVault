@@ -25,5 +25,6 @@ Content-Type: application/json
   "name": "Celeste",
   "description": "A precise and emotional mountain-climbing platformer.",
   "price": 29.99,
-  "genreId": 10
+  "genreId": 10,
+  "isActive": true
 }

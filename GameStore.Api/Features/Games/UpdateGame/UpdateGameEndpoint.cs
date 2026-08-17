@@ -48,6 +48,7 @@ public static class UpdateGameEndpoint
         game.Description = request.Description.Trim();
         game.Price = request.Price;
         game.GenreId = request.GenreId;
+        game.IsActive = request.IsActive;
         game.UpdatedAt = DateTimeOffset.UtcNow;
 
         await db.SaveChangesAsync(cancellationToken);

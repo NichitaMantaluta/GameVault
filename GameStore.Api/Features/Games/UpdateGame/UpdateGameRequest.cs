@@ -4,4 +4,5 @@ public record UpdateGameRequest(
     string Name,
     string Description,
     decimal Price,
-    int GenreId);
+    int GenreId,
+    bool IsActive);
