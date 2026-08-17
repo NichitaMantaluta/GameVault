@@ -4,4 +4,5 @@ public record CreateGameRequest(
     string Name,
     string Description,
     decimal Price,
-    int GenreId);
+    int GenreId,
+    string? ImageUrl);

@@ -5,6 +5,7 @@ public record GetGamesItem(
     string Name,
     string Description,
     decimal Price,
+    string? ImageUrl,
     int GenreId,
     string GenreName);
 

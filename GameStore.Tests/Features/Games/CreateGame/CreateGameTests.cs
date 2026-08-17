@@ -46,6 +46,7 @@ public class CreateGameTests : IClassFixture<GameStoreApiFactory>
         Assert.Equal(request.name, body.Name);
         Assert.Equal(request.description, body.Description);
         Assert.Equal(request.price, body.Price);
+        Assert.Null(body.ImageUrl);
         Assert.Equal(genreId, body.GenreId);
         Assert.True(body.IsActive);
         Assert.Equal($"/api/games/{body.Id}", response.Headers.Location?.ToString());
@@ -58,6 +59,7 @@ public class CreateGameTests : IClassFixture<GameStoreApiFactory>
         Assert.Equal(request.name, persisted.Name);
         Assert.Equal(request.description, persisted.Description);
         Assert.Equal(request.price, persisted.Price);
+        Assert.Null(persisted.ImageUrl);
         Assert.Equal(genreId, persisted.GenreId);
         Assert.True(persisted.IsActive);
         Assert.True(persisted.CreatedAt <= DateTimeOffset.UtcNow);
@@ -205,5 +207,53 @@ public class CreateGameTests : IClassFixture<GameStoreApiFactory>
         Assert.NotEqual(clientSuppliedId, body.Id);
         Assert.True(body.IsActive);
         Assert.NotEqual(DateTimeOffset.Parse("2000-01-01T00:00:00Z"), body.CreatedAt);
+    }
+
+    [Fact]
+    public async Task CreateGame_WithImageUrl_PersistsImageUrl()
+    {
+        var genreId = await _factory.SeedGenreAsync();
+        const string imageUrl = "https://upload.wikimedia.org/wikipedia/commons/0/0f/Celeste_box_art_full.png";
+        var request = new
+        {
+            name = "Celeste",
+            description = "A precise and emotional mountain-climbing platformer.",
+            price = 19.99m,
+            genreId,
+            imageUrl
+        };
+
+        var response = await _client.PostAsJsonAsync("/api/games", request);
+
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+
+        var body = await response.Content.ReadFromJsonAsync<CreateGameResponse>(JsonOptions);
+        Assert.NotNull(body);
+        Assert.Equal(imageUrl, body.ImageUrl);
+
+        using var scope = _factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<GameStoreDbContext>();
+        var persisted = await db.Games.FindAsync(body.Id);
+
+        Assert.NotNull(persisted);
+        Assert.Equal(imageUrl, persisted.ImageUrl);
+    }
+
+    [Fact]
+    public async Task CreateGame_WithImageUrlTooLong_ReturnsValidationProblem()
+    {
+        var genreId = await _factory.SeedGenreAsync();
+        var request = new
+        {
+            name = "Celeste",
+            description = "A precise and emotional mountain-climbing platformer.",
+            price = 19.99m,
+            genreId,
+            imageUrl = "https://example.com/" + new string('a', 2048)
+        };
+
+        var response = await _client.PostAsJsonAsync("/api/games", request);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 }

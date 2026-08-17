@@ -25,4 +25,8 @@
     <ProjectReference Include="..\GameStore.Worker\GameStore.Worker.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="..\GameStore.Api\Persistence\seed-dev-data.sql" Link="seed-dev-data.sql" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>

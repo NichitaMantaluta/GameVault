@@ -25,6 +25,7 @@ public class GameStoreDbContext(DbContextOptions<GameStoreDbContext> options) : 
             entity.Property(game => game.Name).IsRequired().HasMaxLength(200);
             entity.Property(game => game.Description).IsRequired().HasMaxLength(4000);
             entity.Property(game => game.Price).HasPrecision(18, 2);
+            entity.Property(game => game.ImageUrl).HasMaxLength(2048);
             entity.Property(game => game.IsActive).IsRequired();
             entity.Property(game => game.CreatedAt).IsRequired();
             entity.Property(game => game.UpdatedAt).IsRequired();

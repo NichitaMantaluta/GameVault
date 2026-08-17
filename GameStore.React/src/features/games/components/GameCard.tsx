@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import type { GetGamesItem } from '../types/games'
 import './GameCard.css'
 
@@ -13,14 +14,27 @@ type GameCardProps = {
 }
 
 export function GameCard({ game }: GameCardProps) {
+  const [imageFailed, setImageFailed] = useState(false)
+  const showImage = Boolean(game.imageUrl) && !imageFailed
+
   return (
     <article className="game-card">
       <div
         className="game-card__cover"
-        style={{ backgroundColor: coverTone(game.name) }}
-        aria-hidden="true"
+        style={showImage ? undefined : { backgroundColor: coverTone(game.name) }}
       >
-        <span className="game-card__initial">{initial(game.name)}</span>
+        {showImage ? (
+          <img
+            className="game-card__image"
+            src={game.imageUrl ?? undefined}
+            alt=""
+            onError={() => setImageFailed(true)}
+          />
+        ) : (
+          <span className="game-card__initial" aria-hidden="true">
+            {initial(game.name)}
+          </span>
+        )}
       </div>
       <div className="game-card__body">
         <p className="game-card__genre">{game.genreName}</p>

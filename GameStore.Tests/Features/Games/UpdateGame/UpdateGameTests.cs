@@ -47,7 +47,8 @@ public class UpdateGameTests : IClassFixture<GameStoreApiFactory>
             description = "An updated classic platform game.",
             price = 24.99m,
             genreId = newGenreId,
-            isActive = true
+            isActive = true,
+            imageUrl = "https://example.com/super-mario-bros-3-deluxe.png"
         };
 
         var response = await _client.PutAsJsonAsync("/api/games/" + game.Id, request);
@@ -60,6 +61,7 @@ public class UpdateGameTests : IClassFixture<GameStoreApiFactory>
         Assert.Equal(request.name, body.Name);
         Assert.Equal(request.description, body.Description);
         Assert.Equal(request.price, body.Price);
+        Assert.Equal(request.imageUrl, body.ImageUrl);
         Assert.Equal(newGenreId, body.GenreId);
         Assert.True(body.IsActive);
         Assert.Equal(createdAt, body.CreatedAt);
@@ -73,6 +75,7 @@ public class UpdateGameTests : IClassFixture<GameStoreApiFactory>
         Assert.Equal(request.name, persisted.Name);
         Assert.Equal(request.description, persisted.Description);
         Assert.Equal(request.price, persisted.Price);
+        Assert.Equal(request.imageUrl, persisted.ImageUrl);
         Assert.Equal(newGenreId, persisted.GenreId);
         Assert.True(persisted.IsActive);
         Assert.Equal(createdAt, persisted.CreatedAt);
@@ -116,6 +119,38 @@ public class UpdateGameTests : IClassFixture<GameStoreApiFactory>
         Assert.True(body.IsActive);
         Assert.Equal(createdAt, body.CreatedAt);
         Assert.NotEqual(DateTimeOffset.Parse("2000-01-01T00:00:00Z"), body.UpdatedAt);
+    }
+
+    [Fact]
+    public async Task UpdateGame_WithImageUrl_PersistsImageUrl()
+    {
+        var genreId = await _factory.SeedGenreAsync();
+        var game = await SeedGameAsync(genreId, imageUrl: "https://example.com/original.png");
+        const string imageUrl = "https://example.com/updated.png";
+        var request = new
+        {
+            name = game.Name,
+            description = game.Description,
+            price = game.Price,
+            genreId,
+            isActive = true,
+            imageUrl
+        };
+
+        var response = await _client.PutAsJsonAsync("/api/games/" + game.Id, request);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        var body = await response.Content.ReadFromJsonAsync<UpdateGameResponse>(JsonOptions);
+        Assert.NotNull(body);
+        Assert.Equal(imageUrl, body.ImageUrl);
+
+        using var scope = _factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<GameStoreDbContext>();
+        var persisted = await db.Games.FindAsync(game.Id);
+
+        Assert.NotNull(persisted);
+        Assert.Equal(imageUrl, persisted.ImageUrl);
     }
 
     [Theory]
@@ -295,7 +330,8 @@ public class UpdateGameTests : IClassFixture<GameStoreApiFactory>
         decimal price = 19.99m,
         bool isActive = true,
         DateTimeOffset? createdAt = null,
-        DateTimeOffset? updatedAt = null)
+        DateTimeOffset? updatedAt = null,
+        string? imageUrl = null)
     {
         using var scope = _factory.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<GameStoreDbContext>();
@@ -308,6 +344,7 @@ public class UpdateGameTests : IClassFixture<GameStoreApiFactory>
             Name = name,
             Description = description,
             Price = price,
+            ImageUrl = imageUrl,
             GenreId = genreId,
             CreatedAt = timestamp,
             UpdatedAt = updatedAt ?? timestamp,

@@ -8,6 +8,7 @@ public static class UpdateGameEndpoint
     // Keep in sync with GameStoreDbContext Game property max lengths.
     private const int NameMaxLength = 200;
     private const int DescriptionMaxLength = 4000;
+    private const int ImageUrlMaxLength = 2048;
 
     public static RouteHandlerBuilder MapUpdateGame(this IEndpointRouteBuilder endpoints)
     {
@@ -47,6 +48,7 @@ public static class UpdateGameEndpoint
         game.Name = request.Name.Trim();
         game.Description = request.Description.Trim();
         game.Price = request.Price;
+        game.ImageUrl = NormalizeImageUrl(request.ImageUrl);
         game.GenreId = request.GenreId;
         game.IsActive = request.IsActive;
         game.UpdatedAt = DateTimeOffset.UtcNow;
@@ -58,6 +60,7 @@ public static class UpdateGameEndpoint
             game.Name,
             game.Description,
             game.Price,
+            game.ImageUrl,
             game.GenreId,
             game.CreatedAt,
             game.UpdatedAt,
@@ -98,6 +101,17 @@ public static class UpdateGameEndpoint
             errors["GenreId"] = ["GenreId is required."];
         }
 
+        var imageUrl = NormalizeImageUrl(request.ImageUrl);
+        if (imageUrl is not null && imageUrl.Length > ImageUrlMaxLength)
+        {
+            errors["ImageUrl"] = [$"ImageUrl must be {ImageUrlMaxLength} characters or fewer."];
+        }
+
         return errors;
+    }
+
+    private static string? NormalizeImageUrl(string? imageUrl)
+    {
+        return string.IsNullOrWhiteSpace(imageUrl) ? null : imageUrl.Trim();
     }
 }

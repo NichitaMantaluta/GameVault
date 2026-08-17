@@ -5,6 +5,7 @@ public record UpdateGameResponse(
     string Name,
     string Description,
     decimal Price,
+    string? ImageUrl,
     int GenreId,
     DateTimeOffset CreatedAt,
     DateTimeOffset UpdatedAt,

@@ -9,6 +9,7 @@ public static class CreateGameEndpoint
     // Keep in sync with GameStoreDbContext Game property max lengths.
     private const int NameMaxLength = 200;
     private const int DescriptionMaxLength = 4000;
+    private const int ImageUrlMaxLength = 2048;
 
     public static RouteHandlerBuilder MapCreateGame(this IEndpointRouteBuilder endpoints)
     {
@@ -43,6 +44,7 @@ public static class CreateGameEndpoint
             Name = request.Name.Trim(),
             Description = request.Description.Trim(),
             Price = request.Price,
+            ImageUrl = NormalizeImageUrl(request.ImageUrl),
             GenreId = request.GenreId,
             CreatedAt = now,
             UpdatedAt = now,
@@ -57,6 +59,7 @@ public static class CreateGameEndpoint
             game.Name,
             game.Description,
             game.Price,
+            game.ImageUrl,
             game.GenreId,
             game.CreatedAt,
             game.UpdatedAt,
@@ -97,6 +100,17 @@ public static class CreateGameEndpoint
             errors["GenreId"] = ["GenreId is required."];
         }
 
+        var imageUrl = NormalizeImageUrl(request.ImageUrl);
+        if (imageUrl is not null && imageUrl.Length > ImageUrlMaxLength)
+        {
+            errors["ImageUrl"] = [$"ImageUrl must be {ImageUrlMaxLength} characters or fewer."];
+        }
+
         return errors;
+    }
+
+    private static string? NormalizeImageUrl(string? imageUrl)
+    {
+        return string.IsNullOrWhiteSpace(imageUrl) ? null : imageUrl.Trim();
     }
 }

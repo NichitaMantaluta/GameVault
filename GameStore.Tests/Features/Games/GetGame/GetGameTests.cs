@@ -39,6 +39,7 @@ public class GetGameTests : IClassFixture<GameStoreApiFactory>
         Assert.Equal(game.Name, body.Name);
         Assert.Equal(game.Description, body.Description);
         Assert.Equal(game.Price, body.Price);
+        Assert.Equal(game.ImageUrl, body.ImageUrl);
         Assert.Equal(game.GenreId, body.GenreId);
         Assert.True(body.IsActive);
         Assert.Equal(game.CreatedAt, body.CreatedAt);
@@ -95,6 +96,7 @@ public class GetGameTests : IClassFixture<GameStoreApiFactory>
             Name = "Super Mario Bros. 3",
             Description = "A classic platform game.",
             Price = 19.99m,
+            ImageUrl = "https://example.com/super-mario-bros-3.png",
             GenreId = genre.Id,
             CreatedAt = now,
             UpdatedAt = now,

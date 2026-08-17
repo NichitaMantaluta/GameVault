@@ -28,6 +28,7 @@ public static class GetGameEndpoint
             game.Name,
             game.Description,
             game.Price,
+            game.ImageUrl,
             game.GenreId,
             game.CreatedAt,
             game.UpdatedAt,

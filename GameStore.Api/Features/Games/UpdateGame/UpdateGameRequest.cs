@@ -5,4 +5,5 @@ public record UpdateGameRequest(
     string Description,
     decimal Price,
     int GenreId,
-    bool IsActive);
+    bool IsActive,
+    string? ImageUrl);

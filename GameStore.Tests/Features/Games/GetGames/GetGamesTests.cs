@@ -143,7 +143,8 @@ public class GetGamesTests : IDisposable
             genreId,
             "Celeste",
             description: "A mountain-climbing platformer.",
-            price: 19.99m);
+            price: 19.99m,
+            imageUrl: "https://upload.wikimedia.org/wikipedia/commons/0/0f/Celeste_box_art_full.png");
 
         var body = await GetGamesAsync("/api/games");
 
@@ -154,6 +155,7 @@ public class GetGamesTests : IDisposable
         Assert.Equal("Celeste", item.Name);
         Assert.Equal("A mountain-climbing platformer.", item.Description);
         Assert.Equal(19.99m, item.Price);
+        Assert.Equal(game.ImageUrl, item.ImageUrl);
         Assert.Equal(genreId, item.GenreId);
         Assert.Equal("Platformer", item.GenreName);
     }
@@ -195,7 +197,8 @@ public class GetGamesTests : IDisposable
         string name,
         bool isActive = true,
         string description = "A video game.",
-        decimal price = 19.99m)
+        decimal price = 19.99m,
+        string? imageUrl = null)
     {
         using var scope = _factory.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<GameStoreDbContext>();
@@ -208,6 +211,7 @@ public class GetGamesTests : IDisposable
             Name = name,
             Description = description,
             Price = price,
+            ImageUrl = imageUrl,
             GenreId = genreId,
             CreatedAt = now,
             UpdatedAt = now,

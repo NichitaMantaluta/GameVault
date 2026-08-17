@@ -54,6 +54,7 @@ public static class GetGamesEndpoint
                     game.Name,
                     game.Description,
                     game.Price,
+                    game.ImageUrl,
                     game.GenreId,
                     genre.Name))
             .Skip((resolvedPage - 1) * resolvedPageSize)
