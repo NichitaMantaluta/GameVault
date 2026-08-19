@@ -55,11 +55,11 @@ public class AddCartItemTests : IClassFixture<GameStoreApiFactory>
     }
 
     [Fact]
-    public async Task AddCartItem_WhenGameAlreadyInCart_IncrementsQuantity()
+    public async Task AddCartItem_WhenGameAlreadyInCart_DoesNotDuplicateOrIncrement()
     {
         var genreId = await _factory.SeedGenreAsync();
-        var game = await _factory.SeedGameAsync(genreId, name: $"Increment {Guid.NewGuid()}", price: 10m);
-        var client = _factory.CreateUserClient($"increment-{Guid.NewGuid()}");
+        var game = await _factory.SeedGameAsync(genreId, name: $"Already In Cart {Guid.NewGuid()}", price: 10m);
+        var client = _factory.CreateUserClient($"already-{Guid.NewGuid()}");
 
         await client.PostAsJsonAsync("/api/cart/items", new { gameId = game.Id });
         var response = await client.PostAsJsonAsync("/api/cart/items", new { gameId = game.Id });
@@ -69,9 +69,9 @@ public class AddCartItemTests : IClassFixture<GameStoreApiFactory>
         var body = await response.Content.ReadFromJsonAsync<GetCartResponse>(JsonOptions);
         Assert.NotNull(body);
         var item = Assert.Single(body.Items);
-        Assert.Equal(2, item.Quantity);
-        Assert.Equal(20m, item.LineTotal);
-        Assert.Equal(20m, body.Subtotal);
+        Assert.Equal(1, item.Quantity);
+        Assert.Equal(10m, item.LineTotal);
+        Assert.Equal(10m, body.Subtotal);
 
         using var scope = _factory.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<GameStoreDbContext>();

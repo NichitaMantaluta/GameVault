@@ -80,6 +80,16 @@
   opacity: 0.75;
 }
 
+.game-card__cart--in-cart {
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+
+.game-card__cart--in-cart:hover {
+  border-color: var(--accent);
+}
+
 .game-card__error {
   margin: 0;
   color: #8a2f2a;

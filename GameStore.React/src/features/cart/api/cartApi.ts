@@ -1,6 +1,6 @@
 import { getApiBaseUrl } from '../../../api/config'
 import { getAccessToken } from '../../auth/keycloak'
-import type { AddCartItemRequest, GetCartResponse, UpdateCartItemRequest } from '../types/cart'
+import type { AddCartItemRequest, GetCartResponse } from '../types/cart'
 
 export const emptyCart: GetCartResponse = {
   items: [],
@@ -24,21 +24,6 @@ export async function addCartItem(
     body: JSON.stringify(request),
   })
   await throwIfNotOk(response, 'Failed to add item to cart')
-  return (await response.json()) as GetCartResponse
-}
-
-export async function updateCartItem(
-  gameId: string,
-  request: UpdateCartItemRequest,
-  signal?: AbortSignal,
-): Promise<GetCartResponse> {
-  const response = await authorizedFetch(`/api/cart/items/${gameId}`, {
-    method: 'PATCH',
-    signal,
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(request),
-  })
-  await throwIfNotOk(response, 'Failed to update cart item')
   return (await response.json()) as GetCartResponse
 }
 

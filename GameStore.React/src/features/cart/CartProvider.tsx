@@ -8,7 +8,7 @@ import {
   type ReactNode,
 } from 'react'
 import { useAuth } from '../auth/AuthProvider'
-import { addCartItem, emptyCart, getCart, removeCartItem, updateCartItem } from './api/cartApi'
+import { addCartItem, emptyCart, getCart, removeCartItem } from './api/cartApi'
 import type { GetCartResponse } from './types/cart'
 
 type CartContextValue = {
@@ -17,8 +17,8 @@ type CartContextValue = {
   isLoading: boolean
   error: string | null
   reload: () => void
+  containsGame: (gameId: string) => boolean
   addItem: (gameId: string) => Promise<void>
-  setItemQuantity: (gameId: string, quantity: number) => Promise<void>
   removeItem: (gameId: string) => Promise<void>
 }
 
@@ -77,12 +77,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setError(null)
   }, [])
 
-  const setItemQuantity = useCallback(async (gameId: string, quantity: number) => {
-    const response = await updateCartItem(gameId, { quantity })
-    setCart(response)
-    setError(null)
-  }, [])
-
   const removeItem = useCallback(async (gameId: string) => {
     await removeCartItem(gameId)
     const response = await getCart()
@@ -93,15 +87,15 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const value = useMemo<CartContextValue>(
     () => ({
       cart,
-      itemCount: cart.items.reduce((total, item) => total + item.quantity, 0),
+      itemCount: cart.items.length,
       isLoading,
       error,
       reload: () => setReloadKey((current) => current + 1),
+      containsGame: (gameId: string) => cart.items.some((item) => item.gameId === gameId),
       addItem,
-      setItemQuantity,
       removeItem,
     }),
-    [addItem, cart, error, isLoading, removeItem, setItemQuantity],
+    [addItem, cart, error, isLoading, removeItem],
   )
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>

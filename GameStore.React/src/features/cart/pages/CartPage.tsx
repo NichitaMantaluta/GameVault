@@ -14,7 +14,7 @@ const coverTones = ['#1f4d4a', '#3d2b56', '#4a3728', '#1e3a5f', '#4a2c2a', '#2d4
 
 export function CartPage() {
   const { isReady, isAuthenticated, login } = useAuth()
-  const { cart, isLoading, error, reload, setItemQuantity, removeItem } = useCart()
+  const { cart, isLoading, error, reload, removeItem } = useCart()
 
   if (!isReady) {
     return (
@@ -73,13 +73,7 @@ export function CartPage() {
         <>
           <ul className="cart-page__list">
             {cart.items.map((item) => (
-              <CartLineItem
-                key={item.gameId}
-                item={item}
-                disabled={isLoading}
-                onQuantityChange={setItemQuantity}
-                onRemove={removeItem}
-              />
+              <CartLineItem key={item.gameId} item={item} disabled={isLoading} onRemove={removeItem} />
             ))}
           </ul>
           <p className="cart-page__subtotal">
@@ -94,37 +88,24 @@ export function CartPage() {
 type CartLineItemProps = {
   item: GetCartItemResponse
   disabled: boolean
-  onQuantityChange: (gameId: string, quantity: number) => Promise<void>
   onRemove: (gameId: string) => Promise<void>
 }
 
-function CartLineItem({ item, disabled, onQuantityChange, onRemove }: CartLineItemProps) {
+function CartLineItem({ item, disabled, onRemove }: CartLineItemProps) {
   const [imageFailed, setImageFailed] = useState(false)
-  const [isUpdating, setIsUpdating] = useState(false)
+  const [isRemoving, setIsRemoving] = useState(false)
   const [actionError, setActionError] = useState<string | null>(null)
   const showImage = Boolean(item.imageUrl) && !imageFailed
-  const busy = disabled || isUpdating
-
-  async function changeQuantity(quantity: number) {
-    setIsUpdating(true)
-    setActionError(null)
-    try {
-      await onQuantityChange(item.gameId, quantity)
-    } catch (cause) {
-      setActionError(cause instanceof Error ? cause.message : 'Failed to update quantity.')
-    } finally {
-      setIsUpdating(false)
-    }
-  }
+  const busy = disabled || isRemoving
 
   async function handleRemove() {
-    setIsUpdating(true)
+    setIsRemoving(true)
     setActionError(null)
     try {
       await onRemove(item.gameId)
     } catch (cause) {
       setActionError(cause instanceof Error ? cause.message : 'Failed to remove item.')
-      setIsUpdating(false)
+      setIsRemoving(false)
     }
   }
 
@@ -149,29 +130,8 @@ function CartLineItem({ item, disabled, onQuantityChange, onRemove }: CartLineIt
       </div>
       <div className="cart-item__details">
         <h2 className="cart-item__name">{item.name}</h2>
-        <p className="cart-item__price">{priceFormatter.format(item.price)} each</p>
+        <p className="cart-item__price">{priceFormatter.format(item.price)}</p>
         <div className="cart-item__actions">
-          <div className="cart-item__quantity">
-            <button
-              type="button"
-              className="cart-item__qty-button"
-              onClick={() => void changeQuantity(item.quantity - 1)}
-              disabled={busy || item.quantity <= 1}
-              aria-label={`Decrease quantity of ${item.name}`}
-            >
-              −
-            </button>
-            <span className="cart-item__qty-value">{item.quantity}</span>
-            <button
-              type="button"
-              className="cart-item__qty-button"
-              onClick={() => void changeQuantity(item.quantity + 1)}
-              disabled={busy}
-              aria-label={`Increase quantity of ${item.name}`}
-            >
-              +
-            </button>
-          </div>
           <button
             type="button"
             className="cart-page__button"
@@ -187,7 +147,6 @@ function CartLineItem({ item, disabled, onQuantityChange, onRemove }: CartLineIt
           </p>
         ) : null}
       </div>
-      <p className="cart-item__total">{priceFormatter.format(item.lineTotal)}</p>
     </li>
   )
 }

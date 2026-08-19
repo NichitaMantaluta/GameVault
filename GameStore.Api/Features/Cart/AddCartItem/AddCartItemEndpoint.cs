@@ -73,13 +73,8 @@ public static class AddCartItemEndpoint
                 GameId = request.GameId,
                 Quantity = 1
             });
+            await db.SaveChangesAsync(cancellationToken);
         }
-        else
-        {
-            item.Quantity += 1;
-        }
-
-        await db.SaveChangesAsync(cancellationToken);
 
         var response = await CartResponseFactory.CreateAsync(db, cart.Id, cancellationToken);
         return Results.Ok(response);

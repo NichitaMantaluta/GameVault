@@ -61,7 +61,6 @@ public class GetCartTests : IClassFixture<GameStoreApiFactory>
         var client = _factory.CreateUserClient($"totals-{Guid.NewGuid()}");
 
         await client.PostAsJsonAsync("/api/cart/items", new { gameId = mario.Id });
-        await client.PostAsJsonAsync("/api/cart/items", new { gameId = mario.Id });
         await client.PostAsJsonAsync("/api/cart/items", new { gameId = zelda.Id });
 
         var response = await client.GetAsync("/api/cart");
@@ -76,13 +75,13 @@ public class GetCartTests : IClassFixture<GameStoreApiFactory>
         Assert.Equal(mario.Name, marioItem.Name);
         Assert.Equal(19.99m, marioItem.Price);
         Assert.Equal(mario.ImageUrl, marioItem.ImageUrl);
-        Assert.Equal(2, marioItem.Quantity);
-        Assert.Equal(39.98m, marioItem.LineTotal);
+        Assert.Equal(1, marioItem.Quantity);
+        Assert.Equal(19.99m, marioItem.LineTotal);
 
         var zeldaItem = Assert.Single(body.Items, item => item.GameId == zelda.Id);
         Assert.Equal(1, zeldaItem.Quantity);
         Assert.Equal(59.99m, zeldaItem.LineTotal);
 
-        Assert.Equal(99.97m, body.Subtotal);
+        Assert.Equal(79.98m, body.Subtotal);
     }
 }
