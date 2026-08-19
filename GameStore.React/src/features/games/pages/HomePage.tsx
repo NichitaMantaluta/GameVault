@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { LoginButton } from '../../auth/LoginButton'
 import { DEFAULT_PAGE_SIZE, getGames } from '../api/gamesApi'
 import { GameCard } from '../components/GameCard'
 import { Pagination } from '../components/Pagination'
@@ -69,7 +70,10 @@ export function HomePage() {
   return (
     <main className="home">
       <header className="home__header">
-        <p className="home__eyebrow">GameStore</p>
+        <div className="home__top">
+          <p className="home__eyebrow">GameStore</p>
+          <LoginButton />
+        </div>
         <h1 className="home__title">Browse the catalog</h1>
         <p className="home__subtitle">Find games by name across the store.</p>
         <SearchInput value={searchInput} onChange={handleSearchChange} />

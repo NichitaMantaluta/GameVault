@@ -1,4 +1,6 @@
+using GameStore.Api.Authentication;
 using GameStore.Api.Features.Games.CreateGame;
+using GameStore.Api.Features.Games.DeleteGame;
 using GameStore.Api.Features.Games.GetGame;
 using GameStore.Api.Features.Games.GetGames;
 using GameStore.Api.Features.Games.UpdateGame;
@@ -13,6 +15,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddOpenApi();
 builder.Services.AddProblemDetails();
+builder.Services.AddKeycloakJwtAuthentication(builder.Configuration);
 builder.Services.AddDbContext<GameStoreDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("GameStore")));
 
@@ -26,11 +29,14 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapCreateGame();
 app.MapGetGame();
 app.MapGetGames();
 app.MapUpdateGame();
+app.MapDeleteGame();
 
 app.Run();
 

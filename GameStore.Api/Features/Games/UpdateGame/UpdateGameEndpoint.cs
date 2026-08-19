@@ -1,3 +1,4 @@
+using GameStore.Api.Authentication;
 using GameStore.Api.Persistence;
 using Microsoft.EntityFrameworkCore;
 
@@ -12,7 +13,8 @@ public static class UpdateGameEndpoint
 
     public static RouteHandlerBuilder MapUpdateGame(this IEndpointRouteBuilder endpoints)
     {
-        return endpoints.MapPut("/api/games/{id:guid}", HandleAsync);
+        return endpoints.MapPut("/api/games/{id:guid}", HandleAsync)
+            .RequireAuthorization(AuthorizationPolicies.Admin);
     }
 
     private static async Task<IResult> HandleAsync(

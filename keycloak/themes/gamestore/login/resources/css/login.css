@@ -1,0 +1,109 @@
+:root {
+  --text: #17211f;
+  --muted: #5b6764;
+  --bg: #f3f1eb;
+  --surface: #fffcf7;
+  --border: #ddd6c8;
+  --accent: #0f6e62;
+  --shadow: 0 8px 20px rgba(23, 33, 31, 0.06);
+  --keycloak-logo-url: none;
+  --keycloak-bg-logo-url: none;
+  --keycloak-logo-height: auto;
+  --keycloak-logo-width: auto;
+  --keycloak-card-top-color: var(--accent);
+  --pf-v5-global--primary-color--100: #0f6e62;
+  --pf-v5-global--primary-color--200: #0c5a50;
+  --pf-v5-global--active-color--100: #0f6e62;
+  --pf-v5-global--link--Color: #0f6e62;
+  --pf-v5-global--link--Color--hover: #0c5a50;
+  --pf-v5-global--BackgroundColor--100: #f3f1eb;
+  --pf-v5-global--BackgroundColor--200: #fffcf7;
+  --pf-v5-global--Color--100: #17211f;
+  --pf-v5-global--Color--200: #5b6764;
+}
+
+html,
+.login-pf,
+.login-pf body {
+  color: var(--text);
+  font-family: "Segoe UI", system-ui, sans-serif;
+  background: var(--bg) !important;
+  background-image: none !important;
+}
+
+#kc-header-wrapper {
+  color: var(--accent) !important;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+div.kc-logo-text {
+  background-image: none;
+  height: auto;
+  width: auto;
+}
+
+div.kc-logo-text span {
+  display: block;
+  color: var(--accent);
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.pf-v5-c-login__container {
+  padding: 2.25rem 1rem 3.5rem;
+}
+
+.pf-v5-c-login__main {
+  overflow: hidden;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+}
+
+.pf-v5-c-login__main-header {
+  border-top: 4px solid var(--accent);
+}
+
+.pf-v5-c-title {
+  color: var(--text);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+}
+
+.pf-v5-c-form__label-text,
+.pf-v5-c-form__label {
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.pf-v5-c-form-control {
+  color: var(--text);
+  background: var(--surface);
+  border-color: var(--border);
+  border-radius: 8px;
+}
+
+.pf-v5-c-form-control:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.pf-v5-c-button.pf-m-primary {
+  color: #fff;
+  font-weight: 600;
+  background-color: var(--accent);
+  border-color: var(--accent);
+  border-radius: 8px;
+}
+
+.pf-v5-c-button.pf-m-primary:hover {
+  background-color: #0c5a50;
+  border-color: #0c5a50;
+}

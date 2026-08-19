@@ -1,3 +1,4 @@
+using GameStore.Api.Authentication;
 using GameStore.Api.Domain.Games;
 using GameStore.Api.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -13,7 +14,8 @@ public static class CreateGameEndpoint
 
     public static RouteHandlerBuilder MapCreateGame(this IEndpointRouteBuilder endpoints)
     {
-        return endpoints.MapPost("/api/games", HandleAsync);
+        return endpoints.MapPost("/api/games", HandleAsync)
+            .RequireAuthorization(AuthorizationPolicies.Admin);
     }
 
     private static async Task<IResult> HandleAsync(

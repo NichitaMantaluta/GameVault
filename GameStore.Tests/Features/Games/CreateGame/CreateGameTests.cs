@@ -22,6 +22,7 @@ public class CreateGameTests : IClassFixture<GameStoreApiFactory>
     {
         _factory = factory;
         _client = factory.CreateClient();
+        TestJwt.AuthenticateAsAdmin(_client);
     }
 
     [Fact]
