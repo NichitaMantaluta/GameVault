@@ -34,3 +34,17 @@ export function logoutFromStore() {
     redirectUri: window.location.origin,
   })
 }
+
+export async function getAccessToken(): Promise<string | null> {
+  if (!keycloak.authenticated) {
+    return null
+  }
+
+  try {
+    await keycloak.updateToken(30)
+  } catch {
+    return null
+  }
+
+  return keycloak.token ?? null
+}

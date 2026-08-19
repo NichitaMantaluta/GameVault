@@ -49,3 +49,29 @@ Content-Type: application/json
 ### Delete game (admin)
 DELETE {{GameStore.Api_HostAddress}}/api/games/faeaabf8-87a2-4e24-bcee-01b24e6668a1
 Authorization: Bearer {{adminToken.response.body.access_token}}
+
+### Get cart
+GET {{GameStore.Api_HostAddress}}/api/cart
+Authorization: Bearer {{customerToken.response.body.access_token}}
+
+### Add cart item
+POST {{GameStore.Api_HostAddress}}/api/cart/items
+Authorization: Bearer {{customerToken.response.body.access_token}}
+Content-Type: application/json
+
+{
+  "gameId": "faeaabf8-87a2-4e24-bcee-01b24e6668a1"
+}
+
+### Update cart item quantity
+PATCH {{GameStore.Api_HostAddress}}/api/cart/items/faeaabf8-87a2-4e24-bcee-01b24e6668a1
+Authorization: Bearer {{customerToken.response.body.access_token}}
+Content-Type: application/json
+
+{
+  "quantity": 2
+}
+
+### Remove cart item
+DELETE {{GameStore.Api_HostAddress}}/api/cart/items/faeaabf8-87a2-4e24-bcee-01b24e6668a1
+Authorization: Bearer {{customerToken.response.body.access_token}}

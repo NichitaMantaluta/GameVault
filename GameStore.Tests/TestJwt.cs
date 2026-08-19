@@ -15,12 +15,15 @@ internal static class TestJwt
     public static readonly SymmetricSecurityKey SigningKey =
         new(Encoding.UTF8.GetBytes("GameStore-Tests-Signing-Key-32b!"));
 
-    public static string CreateAccessToken(IReadOnlyList<string> roles, string username)
+    public static string CreateAccessToken(
+        IReadOnlyList<string> roles,
+        string username,
+        string? userId = null)
     {
         var claims = new List<Claim>
         {
             new("preferred_username", username),
-            new("sub", username),
+            new("sub", userId ?? username),
             new("realm_access", JsonSerializer.Serialize(new { roles }))
         };
 
@@ -55,5 +58,12 @@ internal static class TestJwt
     {
         client.DefaultRequestHeaders.Authorization =
             new AuthenticationHeaderValue("Bearer", CreateCustomerToken());
+    }
+
+    public static void AuthenticateAsUser(HttpClient client, string userId, params string[] roles)
+    {
+        var assignedRoles = roles.Length > 0 ? roles : ["offline_access"];
+        client.DefaultRequestHeaders.Authorization =
+            new AuthenticationHeaderValue("Bearer", CreateAccessToken(assignedRoles, userId, userId));
     }
 }

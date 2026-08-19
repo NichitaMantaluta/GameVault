@@ -82,6 +82,13 @@ public class GameStoreApiFactory : WebApplicationFactory<Program>
         return client;
     }
 
+    public HttpClient CreateUserClient(string userId, params string[] roles)
+    {
+        var client = CreateClient();
+        TestJwt.AuthenticateAsUser(client, userId, roles);
+        return client;
+    }
+
     public async Task<int> SeedGenreAsync(string name = "Platformer")
     {
         using var scope = Services.CreateScope();

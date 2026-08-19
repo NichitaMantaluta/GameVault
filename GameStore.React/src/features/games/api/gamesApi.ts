@@ -1,10 +1,7 @@
+import { getApiBaseUrl } from '../../../api/config'
 import type { GetGamesQuery, GetGamesResponse } from '../types/games'
 
 export const DEFAULT_PAGE_SIZE = 12
-
-function getApiBaseUrl(): string {
-  return (import.meta.env.VITE_API_BASE_URL ?? '').replace(/\/$/, '')
-}
 
 export async function getGames(
   query: GetGamesQuery = {},

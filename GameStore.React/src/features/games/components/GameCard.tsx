@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import { useAuth } from '../../auth/AuthProvider'
+import { useCart } from '../../cart/CartProvider'
 import type { GetGamesItem } from '../types/games'
 import './GameCard.css'
 
@@ -14,8 +16,33 @@ type GameCardProps = {
 }
 
 export function GameCard({ game }: GameCardProps) {
+  const { isAuthenticated, login } = useAuth()
+  const { addItem } = useCart()
   const [imageFailed, setImageFailed] = useState(false)
+  const [isAdding, setIsAdding] = useState(false)
+  const [addError, setAddError] = useState<string | null>(null)
+  const [justAdded, setJustAdded] = useState(false)
   const showImage = Boolean(game.imageUrl) && !imageFailed
+
+  async function handleAddToCart() {
+    if (!isAuthenticated) {
+      login()
+      return
+    }
+
+    setIsAdding(true)
+    setAddError(null)
+    setJustAdded(false)
+
+    try {
+      await addItem(game.id)
+      setJustAdded(true)
+    } catch (cause) {
+      setAddError(cause instanceof Error ? cause.message : 'Failed to add to cart.')
+    } finally {
+      setIsAdding(false)
+    }
+  }
 
   return (
     <article className="game-card">
@@ -40,6 +67,19 @@ export function GameCard({ game }: GameCardProps) {
         <p className="game-card__genre">{game.genreName}</p>
         <h2 className="game-card__name">{game.name}</h2>
         <p className="game-card__price">{priceFormatter.format(game.price)}</p>
+        <button
+          type="button"
+          className="game-card__cart"
+          onClick={() => void handleAddToCart()}
+          disabled={isAdding}
+        >
+          {isAdding ? 'Adding…' : justAdded ? 'Added' : 'Add to cart'}
+        </button>
+        {addError ? (
+          <p className="game-card__error" role="alert">
+            {addError}
+          </p>
+        ) : null}
       </div>
     </article>
   )

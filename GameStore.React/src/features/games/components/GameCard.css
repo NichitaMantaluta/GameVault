@@ -62,3 +62,26 @@
   font-size: 1rem;
   font-weight: 650;
 }
+
+.game-card__cart {
+  margin-top: auto;
+  padding: 0.55rem 0.75rem;
+  color: #fff;
+  font: inherit;
+  font-weight: 600;
+  background: var(--accent);
+  border: 0;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.game-card__cart:disabled {
+  cursor: wait;
+  opacity: 0.75;
+}
+
+.game-card__error {
+  margin: 0;
+  color: #8a2f2a;
+  font-size: 0.82rem;
+}

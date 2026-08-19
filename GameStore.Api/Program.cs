@@ -1,4 +1,8 @@
 using GameStore.Api.Authentication;
+using GameStore.Api.Features.Cart.AddCartItem;
+using GameStore.Api.Features.Cart.GetCart;
+using GameStore.Api.Features.Cart.RemoveCartItem;
+using GameStore.Api.Features.Cart.UpdateCartItem;
 using GameStore.Api.Features.Games.CreateGame;
 using GameStore.Api.Features.Games.DeleteGame;
 using GameStore.Api.Features.Games.GetGame;
@@ -15,6 +19,17 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddOpenApi();
 builder.Services.AddProblemDetails();
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+        policy.WithOrigins(
+                "http://localhost:5173",
+                "http://127.0.0.1:5173",
+                "http://localhost:4173",
+                "http://127.0.0.1:4173")
+            .AllowAnyHeader()
+            .AllowAnyMethod());
+});
 builder.Services.AddKeycloakJwtAuthentication(builder.Configuration);
 builder.Services.AddDbContext<GameStoreDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("GameStore")));
@@ -26,9 +41,19 @@ app.UseExceptionHandler();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+
+    using (var scope = app.Services.CreateScope())
+    {
+        var db = scope.ServiceProvider.GetRequiredService<GameStoreDbContext>();
+        db.Database.Migrate();
+    }
+}
+else
+{
+    app.UseHttpsRedirection();
 }
 
-app.UseHttpsRedirection();
+app.UseCors();
 app.UseAuthentication();
 app.UseAuthorization();
 
@@ -37,6 +62,10 @@ app.MapGetGame();
 app.MapGetGames();
 app.MapUpdateGame();
 app.MapDeleteGame();
+app.MapGetCart();
+app.MapAddCartItem();
+app.MapUpdateCartItem();
+app.MapRemoveCartItem();
 
 app.Run();
 
