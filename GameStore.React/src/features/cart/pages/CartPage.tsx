@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { navigate } from '../../../app/navigation'
 import { useAuth } from '../../auth/AuthProvider'
+import { createOrder } from '../api/cartApi'
 import { useCart } from '../CartProvider'
 import type { GetCartItemResponse } from '../types/cart'
 import './CartPage.css'
@@ -15,6 +16,9 @@ const coverTones = ['#1f4d4a', '#3d2b56', '#4a3728', '#1e3a5f', '#4a2c2a', '#2d4
 export function CartPage() {
   const { isReady, isAuthenticated, login } = useAuth()
   const { cart, isLoading, error, reload, removeItem } = useCart()
+  const [isCheckingOut, setIsCheckingOut] = useState(false)
+  const [checkoutError, setCheckoutError] = useState<string | null>(null)
+  const checkoutInFlight = useRef(false)
 
   if (!isReady) {
     return (
@@ -36,6 +40,32 @@ export function CartPage() {
         </div>
       </main>
     )
+  }
+
+  const hasItems = cart.items.length > 0
+  const checkoutDisabled = !hasItems || isLoading || isCheckingOut
+
+  async function handleCheckout() {
+    if (!hasItems || isLoading || checkoutInFlight.current) {
+      return
+    }
+
+    checkoutInFlight.current = true
+    setIsCheckingOut(true)
+    setCheckoutError(null)
+
+    try {
+      const order = await createOrder()
+      if (!order.checkoutUrl) {
+        throw new Error('Checkout could not be started. Please try again.')
+      }
+
+      window.location.assign(order.checkoutUrl)
+    } catch (cause) {
+      checkoutInFlight.current = false
+      setCheckoutError(cause instanceof Error ? cause.message : 'Checkout could not be started.')
+      setIsCheckingOut(false)
+    }
   }
 
   return (
@@ -73,12 +103,32 @@ export function CartPage() {
         <>
           <ul className="cart-page__list">
             {cart.items.map((item) => (
-              <CartLineItem key={item.gameId} item={item} disabled={isLoading} onRemove={removeItem} />
+              <CartLineItem
+                key={item.gameId}
+                item={item}
+                disabled={isLoading || isCheckingOut}
+                onRemove={removeItem}
+              />
             ))}
           </ul>
-          <p className="cart-page__subtotal">
-            Subtotal <strong>{priceFormatter.format(cart.subtotal)}</strong>
-          </p>
+          <div className="cart-page__summary">
+            <p className="cart-page__subtotal">
+              Subtotal <strong>{priceFormatter.format(cart.subtotal)}</strong>
+            </p>
+            {checkoutError ? (
+              <p className="cart-page__checkout-error" role="alert">
+                {checkoutError}
+              </p>
+            ) : null}
+            <button
+              type="button"
+              className="cart-page__button cart-page__button--primary cart-page__checkout"
+              onClick={() => void handleCheckout()}
+              disabled={checkoutDisabled}
+            >
+              {isCheckingOut ? 'Starting checkout…' : 'Checkout'}
+            </button>
+          </div>
         </>
       ) : null}
     </main>

@@ -8,6 +8,11 @@ using GameStore.Api.Features.Games.DeleteGame;
 using GameStore.Api.Features.Games.GetGame;
 using GameStore.Api.Features.Games.GetGames;
 using GameStore.Api.Features.Games.UpdateGame;
+using GameStore.Api.Features.Orders.CreateOrder;
+using GameStore.Api.Features.Orders.GetOrder;
+using GameStore.Api.Features.Orders.GetOrders;
+using GameStore.Api.Features.Orders.StripeWebhook;
+using GameStore.Api.Integrations.Payments;
 using GameStore.Api.Persistence;
 using Microsoft.EntityFrameworkCore;
 
@@ -33,6 +38,8 @@ builder.Services.AddCors(options =>
 builder.Services.AddKeycloakJwtAuthentication(builder.Configuration);
 builder.Services.AddDbContext<GameStoreDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("GameStore")));
+builder.Services.Configure<StripeOptions>(builder.Configuration.GetSection(StripeOptions.SectionName));
+builder.Services.AddSingleton<IPaymentService, StripePaymentService>();
 
 var app = builder.Build();
 
@@ -69,6 +76,10 @@ app.MapGetCart();
 app.MapAddCartItem();
 app.MapUpdateCartItem();
 app.MapRemoveCartItem();
+app.MapCreateOrder();
+app.MapGetOrder();
+app.MapGetOrders();
+app.MapStripeWebhook();
 
 app.Run();
 

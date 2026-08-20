@@ -19,3 +19,19 @@ export type AddCartItemRequest = {
 export type UpdateCartItemRequest = {
   quantity: number
 }
+
+export type CreateOrderItemResponse = {
+  gameId: string
+  gameName: string
+  price: number
+}
+
+export type CreateOrderResponse = {
+  id: string
+  status: string
+  totalAmount: number
+  currency: string
+  createdAt: string
+  checkoutUrl: string
+  items: CreateOrderItemResponse[]
+}

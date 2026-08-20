@@ -1,4 +1,5 @@
 using GameStore.Api.Domain.Games;
+using GameStore.Api.Integrations.Payments;
 using GameStore.Api.Persistence;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Hosting;
@@ -15,13 +16,25 @@ namespace GameStore.Tests;
 
 public class GameStoreApiFactory : WebApplicationFactory<Program>
 {
+    public const string StripeWebhookSecret = "whsec_test_gamestore";
+
     private readonly string _databaseName = $"GameStoreTests-{Guid.NewGuid()}";
+    private readonly FakePaymentService _paymentService = new();
+
+    public FakePaymentService PaymentService => _paymentService;
 
     public GameStoreApiFactory()
     {
         Environment.SetEnvironmentVariable("Authentication__Authority", TestJwt.Issuer);
         Environment.SetEnvironmentVariable("Authentication__Audience", TestJwt.Audience);
         Environment.SetEnvironmentVariable("Authentication__RequireHttpsMetadata", "false");
+        Environment.SetEnvironmentVariable("Stripe__WebhookSecret", StripeWebhookSecret);
+        Environment.SetEnvironmentVariable(
+            "Stripe__SuccessUrl",
+            "http://localhost:5173/checkout/success?orderId={ORDER_ID}");
+        Environment.SetEnvironmentVariable(
+            "Stripe__CancelUrl",
+            "http://localhost:5173/checkout/cancel");
     }
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
@@ -29,15 +42,20 @@ public class GameStoreApiFactory : WebApplicationFactory<Program>
         builder.UseSetting("Authentication:Authority", TestJwt.Issuer);
         builder.UseSetting("Authentication:Audience", TestJwt.Audience);
         builder.UseSetting("Authentication:RequireHttpsMetadata", "false");
+        builder.UseSetting("Stripe:WebhookSecret", StripeWebhookSecret);
+        builder.UseSetting("Stripe:SuccessUrl", "http://localhost:5173/checkout/success?orderId={ORDER_ID}");
+        builder.UseSetting("Stripe:CancelUrl", "http://localhost:5173/checkout/cancel");
 
         builder.ConfigureTestServices(services =>
         {
             services.RemoveAll<IDbContextOptionsConfiguration<GameStoreDbContext>>();
             services.RemoveAll<DbContextOptions<GameStoreDbContext>>();
             services.RemoveAll<GameStoreDbContext>();
+            services.RemoveAll<IPaymentService>();
 
             services.AddDbContext<GameStoreDbContext>(options =>
                 options.UseInMemoryDatabase(_databaseName));
+            services.AddSingleton<IPaymentService>(_paymentService);
 
             services.PostConfigure<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme, options =>
             {

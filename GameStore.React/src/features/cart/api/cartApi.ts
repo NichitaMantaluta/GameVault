@@ -1,6 +1,6 @@
 import { getApiBaseUrl } from '../../../api/config'
 import { getAccessToken } from '../../auth/keycloak'
-import type { AddCartItemRequest, GetCartResponse } from '../types/cart'
+import type { AddCartItemRequest, CreateOrderResponse, GetCartResponse } from '../types/cart'
 
 export const emptyCart: GetCartResponse = {
   items: [],
@@ -33,6 +33,15 @@ export async function removeCartItem(gameId: string, signal?: AbortSignal): Prom
     signal,
   })
   await throwIfNotOk(response, 'Failed to remove cart item')
+}
+
+export async function createOrder(signal?: AbortSignal): Promise<CreateOrderResponse> {
+  const response = await authorizedFetch('/api/orders', {
+    method: 'POST',
+    signal,
+  })
+  await throwIfNotOk(response, 'Failed to start checkout')
+  return (await response.json()) as CreateOrderResponse
 }
 
 async function authorizedFetch(path: string, init: RequestInit): Promise<Response> {
