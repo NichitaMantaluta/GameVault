@@ -9,14 +9,18 @@ import { SiteHeader } from './features/layout/SiteHeader'
 type AccountRoute = {
   section: AccountSection
   orderId?: string
+  catalogGameId?: string
+  focusDisable?: boolean
 }
 
 export default function App() {
   const [path, setPath] = useState(window.location.pathname)
+  const [search, setSearch] = useState(window.location.search)
 
   useEffect(() => {
     function handlePopState() {
       setPath(window.location.pathname)
+      setSearch(window.location.search)
     }
 
     window.addEventListener('popstate', handlePopState)
@@ -25,7 +29,7 @@ export default function App() {
 
   const normalizedPath = path.replace(/\/$/, '') || '/'
   const gameId = matchGameId(normalizedPath)
-  const accountRoute = matchAccountRoute(normalizedPath)
+  const accountRoute = matchAccountRoute(normalizedPath, search)
 
   return (
     <CartProvider>
@@ -33,7 +37,12 @@ export default function App() {
       {normalizedPath === '/cart' ? (
         <CartPage />
       ) : accountRoute ? (
-        <AccountPage section={accountRoute.section} orderId={accountRoute.orderId} />
+        <AccountPage
+          section={accountRoute.section}
+          orderId={accountRoute.orderId}
+          catalogGameId={accountRoute.catalogGameId}
+          focusDisable={accountRoute.focusDisable}
+        />
       ) : gameId ? (
         <GameDetailsPage gameId={gameId} />
       ) : (
@@ -48,7 +57,7 @@ function matchGameId(path: string): string | null {
   return match?.[1] ?? null
 }
 
-function matchAccountRoute(path: string): AccountRoute | null {
+function matchAccountRoute(path: string, search: string): AccountRoute | null {
   if (path === '/account') {
     return { section: 'overview' }
   }
@@ -60,6 +69,24 @@ function matchAccountRoute(path: string): AccountRoute | null {
   const orderMatch = /^\/account\/orders\/([^/]+)$/.exec(path)
   if (orderMatch?.[1]) {
     return { section: 'order', orderId: orderMatch[1] }
+  }
+
+  if (path === '/account/catalog') {
+    return { section: 'catalog' }
+  }
+
+  if (path === '/account/catalog/new') {
+    return { section: 'catalog-new' }
+  }
+
+  const catalogEditMatch = /^\/account\/catalog\/([^/]+)\/edit$/.exec(path)
+  if (catalogEditMatch?.[1]) {
+    const params = new URLSearchParams(search)
+    return {
+      section: 'catalog-edit',
+      catalogGameId: catalogEditMatch[1],
+      focusDisable: params.get('focus') === 'disable',
+    }
   }
 
   return null

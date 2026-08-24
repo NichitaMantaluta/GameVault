@@ -158,6 +158,74 @@ public class GetGamesTests : IDisposable
         Assert.Equal(game.ImageUrl, item.ImageUrl);
         Assert.Equal(genreId, item.GenreId);
         Assert.Equal("Platformer", item.GenreName);
+        Assert.True(item.IsActive);
+    }
+
+    [Fact]
+    public async Task GetGames_IncludeInactive_WithoutAdmin_StillReturnsOnlyActive()
+    {
+        var genreId = await SeedGenreAsync();
+        await SeedGameAsync(genreId, "Celeste");
+        await SeedGameAsync(genreId, "Hidden Gem", isActive: false);
+
+        var body = await GetGamesAsync("/api/games?includeInactive=true");
+
+        Assert.Equal(1, body.TotalCount);
+        Assert.DoesNotContain(body.Items, item => item.Name == "Hidden Gem");
+    }
+
+    [Fact]
+    public async Task GetGames_IncludeInactive_AsAdmin_ReturnsActiveAndInactive()
+    {
+        var genreId = await SeedGenreAsync();
+        await SeedGameAsync(genreId, "Celeste");
+        await SeedGameAsync(genreId, "Hidden Gem", isActive: false);
+
+        var admin = _factory.CreateAdminClient();
+        var response = await admin.GetAsync("/api/games?includeInactive=true");
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        var body = await response.Content.ReadFromJsonAsync<GetGamesResponse>(JsonOptions);
+        Assert.NotNull(body);
+        Assert.Equal(2, body.TotalCount);
+        Assert.Contains(body.Items, item => item.Name == "Celeste" && item.IsActive);
+        Assert.Contains(body.Items, item => item.Name == "Hidden Gem" && !item.IsActive);
+    }
+
+    [Fact]
+    public async Task GetGames_StatusFirstInactive_AsAdmin_OrdersDisabledFirst()
+    {
+        var genreId = await SeedGenreAsync();
+        await SeedGameAsync(genreId, "Active Game");
+        await SeedGameAsync(genreId, "Disabled Game", isActive: false);
+
+        var admin = _factory.CreateAdminClient();
+        var response = await admin.GetAsync("/api/games?includeInactive=true&statusFirst=inactive");
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        var body = await response.Content.ReadFromJsonAsync<GetGamesResponse>(JsonOptions);
+        Assert.NotNull(body);
+        Assert.Equal(2, body.Items.Count);
+        Assert.False(body.Items[0].IsActive);
+        Assert.True(body.Items[1].IsActive);
+    }
+
+    [Fact]
+    public async Task GetGames_StatusFirstActive_AsAdmin_OrdersActiveFirst()
+    {
+        var genreId = await SeedGenreAsync();
+        await SeedGameAsync(genreId, "Active Game");
+        await SeedGameAsync(genreId, "Disabled Game", isActive: false);
+
+        var admin = _factory.CreateAdminClient();
+        var response = await admin.GetAsync("/api/games?includeInactive=true&statusFirst=active");
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        var body = await response.Content.ReadFromJsonAsync<GetGamesResponse>(JsonOptions);
+        Assert.NotNull(body);
+        Assert.Equal(2, body.Items.Count);
+        Assert.True(body.Items[0].IsActive);
+        Assert.False(body.Items[1].IsActive);
     }
 
     [Fact]

@@ -29,6 +29,7 @@ export type AccountProfile = {
 type AuthContextValue = {
   isReady: boolean
   isAuthenticated: boolean
+  isAdmin: boolean
   username: string | null
   profile: AccountProfile
   login: () => void
@@ -52,10 +53,12 @@ const AuthContext = createContext<AuthContextValue | null>(null)
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [isReady, setIsReady] = useState(false)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [isAdmin, setIsAdmin] = useState(false)
   const [profile, setProfile] = useState<AccountProfile>(emptyProfile)
 
   const applySession = useCallback((authenticated: boolean) => {
     setIsAuthenticated(authenticated)
+    setIsAdmin(authenticated ? readIsAdmin(getKeycloak().tokenParsed) : false)
     setProfile(authenticated ? readProfile(getKeycloak().tokenParsed) : emptyProfile)
   }, [])
 
@@ -91,6 +94,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     () => ({
       isReady,
       isAuthenticated,
+      isAdmin,
       username: profile.username,
       profile,
       login: () => {
@@ -104,7 +108,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       },
       refreshProfile,
     }),
-    [isAuthenticated, isReady, profile, refreshProfile],
+    [isAdmin, isAuthenticated, isReady, profile, refreshProfile],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
@@ -117,6 +121,44 @@ export function useAuth() {
   }
 
   return context
+}
+
+function readIsAdmin(parsed: unknown): boolean {
+  const keycloak = getKeycloak()
+  if (keycloak.hasRealmRole?.('Admin')) {
+    return true
+  }
+
+  if (!parsed || typeof parsed !== 'object') {
+    return false
+  }
+
+  const claims = parsed as Record<string, unknown>
+  if (hasRoleValue(claims.role, 'Admin')) {
+    return true
+  }
+
+  const realmAccess = claims.realm_access
+  if (realmAccess && typeof realmAccess === 'object') {
+    const roles = (realmAccess as { roles?: unknown }).roles
+    if (hasRoleValue(roles, 'Admin')) {
+      return true
+    }
+  }
+
+  return false
+}
+
+function hasRoleValue(value: unknown, role: string): boolean {
+  if (typeof value === 'string') {
+    return value === role
+  }
+
+  if (Array.isArray(value)) {
+    return value.some((entry) => entry === role)
+  }
+
+  return false
 }
 
 function readProfile(parsed: unknown): AccountProfile {

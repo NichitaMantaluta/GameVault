@@ -7,7 +7,8 @@ public record GetGamesItem(
     decimal Price,
     string? ImageUrl,
     int GenreId,
-    string GenreName);
+    string GenreName,
+    bool IsActive);
 
 public record GetGamesResponse(
     IReadOnlyList<GetGamesItem> Items,
