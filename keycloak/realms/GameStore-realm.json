@@ -1,7 +1,7 @@
 {
   "id": "GameStore",
   "realm": "GameStore",
-  "displayName": "GameStore",
+  "displayName": "GameVault",
   "enabled": true,
   "sslRequired": "none",
   "loginTheme": "gamestore",
@@ -15,7 +15,7 @@
     "realm": [
       {
         "name": "Admin",
-        "description": "Can manage the GameStore catalog",
+        "description": "Can manage the GameVault catalog",
         "composite": false,
         "clientRole": false
       }
@@ -31,8 +31,8 @@
   "clients": [
     {
       "clientId": "gamestore",
-      "name": "GameStore",
-      "description": "Public client used to obtain GameStore API access tokens",
+      "name": "GameVault",
+      "description": "Public client used to obtain GameVault API access tokens",
       "enabled": true,
       "protocol": "openid-connect",
       "publicClient": true,

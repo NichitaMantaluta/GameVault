@@ -10,7 +10,7 @@ export function SiteHeader() {
   return (
     <header className="site-header">
       <button type="button" className="site-header__brand" onClick={() => navigate('/')}>
-        GameStore
+        GameVault
       </button>
       <div className="site-header__actions">
         <CartBadge />
