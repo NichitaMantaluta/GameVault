@@ -1,5 +1,20 @@
-import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
-import { getKeycloak, initKeycloak, loginToStore, logoutFromStore } from './keycloak'
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from 'react'
+import {
+  getKeycloak,
+  initKeycloak,
+  loginToStore,
+  logoutFromStore,
+  openAccountManagement,
+  refreshKeycloakSession,
+} from './keycloak'
 
 export type AccountProfile = {
   username: string | null
@@ -18,6 +33,8 @@ type AuthContextValue = {
   profile: AccountProfile
   login: () => void
   logout: () => void
+  manageAccount: () => void
+  refreshProfile: () => Promise<void>
 }
 
 const emptyProfile: AccountProfile = {
@@ -37,6 +54,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [profile, setProfile] = useState<AccountProfile>(emptyProfile)
 
+  const applySession = useCallback((authenticated: boolean) => {
+    setIsAuthenticated(authenticated)
+    setProfile(authenticated ? readProfile(getKeycloak().tokenParsed) : emptyProfile)
+  }, [])
+
   useEffect(() => {
     let cancelled = false
 
@@ -46,8 +68,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           return
         }
 
-        setIsAuthenticated(authenticated)
-        setProfile(authenticated ? readProfile(getKeycloak().tokenParsed) : emptyProfile)
+        applySession(authenticated)
         setIsReady(true)
       })
       .catch(() => {
@@ -59,7 +80,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => {
       cancelled = true
     }
-  }, [])
+  }, [applySession])
+
+  const refreshProfile = useCallback(async () => {
+    const authenticated = await refreshKeycloakSession()
+    applySession(authenticated)
+  }, [applySession])
 
   const value = useMemo<AuthContextValue>(
     () => ({
@@ -73,8 +99,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       logout: () => {
         void logoutFromStore()
       },
+      manageAccount: () => {
+        openAccountManagement()
+      },
+      refreshProfile,
     }),
-    [isAuthenticated, isReady, profile],
+    [isAuthenticated, isReady, profile, refreshProfile],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
@@ -89,19 +119,21 @@ export function useAuth() {
   return context
 }
 
-function readProfile(parsed: Record<string, unknown> | undefined): AccountProfile {
-  if (!parsed) {
+function readProfile(parsed: unknown): AccountProfile {
+  if (!parsed || typeof parsed !== 'object') {
     return emptyProfile
   }
 
+  const claims = parsed as Record<string, unknown>
+
   return {
-    username: readString(parsed.preferred_username),
-    email: readString(parsed.email),
-    name: readString(parsed.name),
-    givenName: readString(parsed.given_name),
-    familyName: readString(parsed.family_name),
-    subject: readString(parsed.sub),
-    emailVerified: typeof parsed.email_verified === 'boolean' ? parsed.email_verified : null,
+    username: readString(claims.preferred_username),
+    email: readString(claims.email),
+    name: readString(claims.name),
+    givenName: readString(claims.given_name),
+    familyName: readString(claims.family_name),
+    subject: readString(claims.sub),
+    emailVerified: typeof claims.email_verified === 'boolean' ? claims.email_verified : null,
   }
 }
 

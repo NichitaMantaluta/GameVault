@@ -48,3 +48,27 @@ export async function getAccessToken(): Promise<string | null> {
 
   return keycloak.token ?? null
 }
+
+export function openAccountManagement() {
+  const accountUrl = keycloak.createAccountUrl({
+    redirectUri: `${window.location.origin}/account`,
+  })
+  window.location.assign(accountUrl)
+}
+
+/** Forces a token refresh so claim changes from Account Console are reflected. */
+export async function refreshKeycloakSession(): Promise<boolean> {
+  await initKeycloak()
+
+  if (!keycloak.authenticated) {
+    return false
+  }
+
+  try {
+    // Large minValidity forces a refresh so Account Console claim updates are loaded.
+    await keycloak.updateToken(Number.MAX_SAFE_INTEGER)
+    return true
+  } catch {
+    return false
+  }
+}

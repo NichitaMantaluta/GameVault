@@ -112,7 +112,10 @@
         }
       ],
       "groups": [ "/Administrators" ],
-      "realmRoles": [ "Admin" ]
+      "realmRoles": [ "Admin", "default-roles-gamestore" ],
+      "clientRoles": {
+        "account": [ "manage-account", "view-profile" ]
+      }
     },
     {
       "username": "customer",
@@ -127,7 +130,11 @@
           "value": "customer",
           "temporary": false
         }
-      ]
+      ],
+      "realmRoles": [ "default-roles-gamestore" ],
+      "clientRoles": {
+        "account": [ "manage-account", "view-profile" ]
+      }
     }
   ]
 }

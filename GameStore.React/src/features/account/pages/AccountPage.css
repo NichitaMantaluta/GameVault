@@ -157,6 +157,22 @@
   word-break: break-word;
 }
 
+.account-page__overview-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.55rem;
+  margin-top: 1.25rem;
+  padding-top: 1.15rem;
+  border-top: 1px solid var(--border);
+}
+
+.account-page__hint {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
 .account-page__empty {
   display: flex;
   flex-direction: column;

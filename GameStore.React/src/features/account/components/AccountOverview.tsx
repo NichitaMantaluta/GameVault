@@ -1,8 +1,27 @@
+import { useEffect } from 'react'
 import { useAuth } from '../../auth/AuthProvider'
 
 export function AccountOverview() {
-  const { profile } = useAuth()
+  const { profile, manageAccount, refreshProfile } = useAuth()
   const fields = buildFields(profile)
+
+  useEffect(() => {
+    void refreshProfile()
+
+    function handleReturn() {
+      if (document.visibilityState === 'visible') {
+        void refreshProfile()
+      }
+    }
+
+    window.addEventListener('focus', handleReturn)
+    document.addEventListener('visibilitychange', handleReturn)
+
+    return () => {
+      window.removeEventListener('focus', handleReturn)
+      document.removeEventListener('visibilitychange', handleReturn)
+    }
+  }, [refreshProfile])
 
   return (
     <div>
@@ -19,6 +38,18 @@ export function AccountOverview() {
           ))}
         </dl>
       )}
+      <div className="account-page__overview-actions">
+        <button
+          type="button"
+          className="account-page__button account-page__button--primary"
+          onClick={manageAccount}
+        >
+          Manage account
+        </button>
+        <p className="account-page__hint">
+          Opens the Keycloak Account Console to update allowed profile details.
+        </p>
+      </div>
     </div>
   )
 }
