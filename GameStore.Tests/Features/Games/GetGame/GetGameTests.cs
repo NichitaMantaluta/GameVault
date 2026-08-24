@@ -41,6 +41,7 @@ public class GetGameTests : IClassFixture<GameStoreApiFactory>
         Assert.Equal(game.Price, body.Price);
         Assert.Equal(game.ImageUrl, body.ImageUrl);
         Assert.Equal(game.GenreId, body.GenreId);
+        Assert.Equal("Platformer", body.GenreName);
         Assert.True(body.IsActive);
         Assert.Equal(game.CreatedAt, body.CreatedAt);
         Assert.Equal(game.UpdatedAt, body.UpdatedAt);

@@ -7,6 +7,7 @@ public record GetGameResponse(
     decimal Price,
     string? ImageUrl,
     int GenreId,
+    string GenreName,
     DateTimeOffset CreatedAt,
     DateTimeOffset UpdatedAt,
     bool IsActive);

@@ -21,3 +21,16 @@ export type GetGamesResponse = {
   totalCount: number
   totalPages: number
 }
+
+export type GetGameResponse = {
+  id: string
+  name: string
+  description: string
+  price: number
+  imageUrl: string | null
+  genreId: number
+  genreName: string
+  createdAt: string
+  updatedAt: string
+  isActive: boolean
+}

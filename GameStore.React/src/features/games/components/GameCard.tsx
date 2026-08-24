@@ -24,6 +24,11 @@ export function GameCard({ game }: GameCardProps) {
   const [addError, setAddError] = useState<string | null>(null)
   const showImage = Boolean(game.imageUrl) && !imageFailed
   const inCart = containsGame(game.id)
+  const detailsPath = `/games/${game.id}`
+
+  function openDetails() {
+    navigate(detailsPath)
+  }
 
   async function handleCartClick() {
     if (!isAuthenticated) {
@@ -50,26 +55,37 @@ export function GameCard({ game }: GameCardProps) {
 
   return (
     <article className="game-card">
-      <div
-        className="game-card__cover"
-        style={showImage ? undefined : { backgroundColor: coverTone(game.name) }}
+      <button
+        type="button"
+        className="game-card__cover-link"
+        onClick={openDetails}
+        aria-label={`View details for ${game.name}`}
       >
-        {showImage ? (
-          <img
-            className="game-card__image"
-            src={game.imageUrl ?? undefined}
-            alt=""
-            onError={() => setImageFailed(true)}
-          />
-        ) : (
-          <span className="game-card__initial" aria-hidden="true">
-            {initial(game.name)}
-          </span>
-        )}
-      </div>
+        <div
+          className="game-card__cover"
+          style={showImage ? undefined : { backgroundColor: coverTone(game.name) }}
+        >
+          {showImage ? (
+            <img
+              className="game-card__image"
+              src={game.imageUrl ?? undefined}
+              alt=""
+              onError={() => setImageFailed(true)}
+            />
+          ) : (
+            <span className="game-card__initial" aria-hidden="true">
+              {initial(game.name)}
+            </span>
+          )}
+        </div>
+      </button>
       <div className="game-card__body">
         <p className="game-card__genre">{game.genreName}</p>
-        <h2 className="game-card__name">{game.name}</h2>
+        <h2 className="game-card__name">
+          <button type="button" className="game-card__name-link" onClick={openDetails}>
+            {game.name}
+          </button>
+        </h2>
         <p className="game-card__price">{priceFormatter.format(game.price)}</p>
         <button
           type="button"

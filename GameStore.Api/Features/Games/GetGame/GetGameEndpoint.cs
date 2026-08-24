@@ -1,4 +1,5 @@
 using GameStore.Api.Persistence;
+using Microsoft.EntityFrameworkCore;
 
 namespace GameStore.Api.Features.Games.GetGame;
 
@@ -14,25 +15,29 @@ public static class GetGameEndpoint
         GameStoreDbContext db,
         CancellationToken cancellationToken)
     {
-        var game = await db.Games.FindAsync([id], cancellationToken);
+        var response = await (
+                from game in db.Games.AsNoTracking()
+                join genre in db.Genres.AsNoTracking() on game.GenreId equals genre.Id
+                where game.Id == id
+                select new GetGameResponse(
+                    game.Id,
+                    game.Name,
+                    game.Description,
+                    game.Price,
+                    game.ImageUrl,
+                    game.GenreId,
+                    genre.Name,
+                    game.CreatedAt,
+                    game.UpdatedAt,
+                    game.IsActive))
+            .FirstOrDefaultAsync(cancellationToken);
 
-        if (game is null)
+        if (response is null)
         {
             return Results.Problem(
                 detail: $"Game '{id}' was not found.",
                 statusCode: StatusCodes.Status404NotFound);
         }
-
-        var response = new GetGameResponse(
-            game.Id,
-            game.Name,
-            game.Description,
-            game.Price,
-            game.ImageUrl,
-            game.GenreId,
-            game.CreatedAt,
-            game.UpdatedAt,
-            game.IsActive);
 
         return Results.Ok(response);
     }
