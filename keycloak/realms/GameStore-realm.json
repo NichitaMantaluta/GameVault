@@ -36,6 +36,8 @@
       "enabled": true,
       "protocol": "openid-connect",
       "publicClient": true,
+      "rootUrl": "http://localhost:5173",
+      "baseUrl": "http://localhost:5173/",
       "standardFlowEnabled": true,
       "implicitFlowEnabled": false,
       "directAccessGrantsEnabled": true,

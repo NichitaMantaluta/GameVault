@@ -54,7 +54,7 @@ export function OrderDetails({ orderId }: OrderDetailsProps) {
     <div>
       <button
         type="button"
-        className="account-page__link account-page__back"
+        className="account-page__back"
         onClick={() => navigate('/account/orders')}
       >
         ← Back to order history

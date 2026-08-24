@@ -103,7 +103,7 @@ export function GameDetailsPage({ gameId }: GameDetailsPageProps) {
   return (
     <main className="game-details">
       <button type="button" className="game-details__back" onClick={() => navigate('/')}>
-        ← Back to catalog
+        ← Back to Catalog
       </button>
 
       {isLoading ? <p className="game-details__status">Loading game…</p> : null}

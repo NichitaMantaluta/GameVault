@@ -12,8 +12,8 @@ export function CatalogCreate() {
 
   return (
     <div>
-      <button type="button" className="account-page__link account-page__back" onClick={() => navigate('/account/catalog')}>
-        ← Back to catalog
+      <button type="button" className="account-page__back" onClick={() => navigate('/account/catalog')}>
+        ← Back to Catalog
       </button>
       <GameForm
         title="New game"

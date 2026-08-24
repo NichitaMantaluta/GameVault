@@ -68,11 +68,8 @@ export function CatalogEdit({ gameId, focusDisable = false }: CatalogEditProps) 
       return
     }
 
-    const updated = await updateGame(game.id, toUpdatePayload(values))
-    const wasReactivated = !game.isActive && updated.isActive
-    setCatalogFeedback(
-      wasReactivated ? `Reactivated “${updated.name}”.` : `Updated “${updated.name}”.`,
-    )
+    const updated = await updateGame(game.id, toUpdatePayload(values, game.isActive))
+    setCatalogFeedback(`Updated “${updated.name}”.`)
     navigate('/account/catalog')
   }
 
@@ -123,10 +120,10 @@ export function CatalogEdit({ gameId, focusDisable = false }: CatalogEditProps) 
     <div>
       <button
         type="button"
-        className="account-page__link account-page__back"
+        className="account-page__back"
         onClick={() => navigate('/account/catalog')}
       >
-        ← Back to catalog
+        ← Back to Catalog
       </button>
 
       {isLoading ? <p className="account-page__status">Loading game…</p> : null}
@@ -139,7 +136,7 @@ export function CatalogEdit({ gameId, focusDisable = false }: CatalogEditProps) 
             className="account-page__button account-page__button--primary"
             onClick={() => navigate('/account/catalog')}
           >
-            Back to catalog
+            Back to Catalog
           </button>
         </div>
       ) : null}
@@ -164,7 +161,6 @@ export function CatalogEdit({ gameId, focusDisable = false }: CatalogEditProps) 
             submitLabel="Save changes"
             initialValues={toFormValues(game)}
             currentGenre={{ id: game.genreId, name: game.genreName }}
-            showActiveToggle
             onSubmit={handleSubmit}
             onCancel={() => navigate('/account/catalog')}
           />
@@ -255,11 +251,10 @@ function toFormValues(game: GetGameResponse): GameFormValues {
     price: String(game.price),
     genreId: String(game.genreId),
     imageUrl: game.imageUrl ?? '',
-    isActive: game.isActive,
   }
 }
 
-function toUpdatePayload(values: GameFormValues) {
+function toUpdatePayload(values: GameFormValues, isActive: boolean) {
   const price = Number(values.price)
   const genreId = Number(values.genreId)
   const imageUrl = values.imageUrl.trim()
@@ -269,7 +264,7 @@ function toUpdatePayload(values: GameFormValues) {
     description: values.description.trim(),
     price: Number.isFinite(price) ? price : 0,
     genreId: Number.isFinite(genreId) ? genreId : 0,
-    isActive: values.isActive,
+    isActive,
     imageUrl: imageUrl.length > 0 ? imageUrl : null,
   }
 }

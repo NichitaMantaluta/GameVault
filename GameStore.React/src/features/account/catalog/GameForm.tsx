@@ -8,7 +8,6 @@ export type GameFormValues = {
   price: string
   genreId: string
   imageUrl: string
-  isActive: boolean
 }
 
 type GameFormProps = {
@@ -16,7 +15,6 @@ type GameFormProps = {
   submitLabel: string
   initialValues: GameFormValues
   currentGenre?: { id: number; name: string } | null
-  showActiveToggle?: boolean
   onSubmit: (values: GameFormValues) => Promise<void>
   onCancel: () => void
 }
@@ -26,7 +24,6 @@ export function GameForm({
   submitLabel,
   initialValues,
   currentGenre = null,
-  showActiveToggle = false,
   onSubmit,
   onCancel,
 }: GameFormProps) {
@@ -139,19 +136,6 @@ export function GameForm({
           <FieldError errors={fieldErrors} names={['imageUrl', 'ImageUrl']} />
         </label>
 
-        {showActiveToggle ? (
-          <label className="catalog-form__check">
-            <input
-              type="checkbox"
-              checked={values.isActive}
-              onChange={(event) =>
-                setValues((current) => ({ ...current, isActive: event.target.checked }))
-              }
-            />
-            <span>Active in catalog</span>
-          </label>
-        ) : null}
-
         {formError ? (
           <p className="catalog-form__error" role="alert">
             {formError}
@@ -206,6 +190,5 @@ export function emptyGameFormValues(): GameFormValues {
     price: '',
     genreId: '',
     imageUrl: '',
-    isActive: true,
   }
 }
