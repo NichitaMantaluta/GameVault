@@ -1,3 +1,4 @@
+import { navigate } from '../../app/navigation'
 import { useAuth } from './AuthProvider'
 import './LoginButton.css'
 
@@ -7,7 +8,16 @@ export function LoginButton() {
   if (isAuthenticated) {
     return (
       <div className="auth-bar">
-        {username ? <p className="auth-bar__user">{username}</p> : null}
+        {username ? (
+          <button
+            type="button"
+            className="auth-bar__user"
+            onClick={() => navigate('/account')}
+            aria-label={`Open account for ${username}`}
+          >
+            {username}
+          </button>
+        ) : null}
         <button type="button" className="auth-bar__button" onClick={logout}>
           Log out
         </button>

@@ -7,9 +7,26 @@
 
 .auth-bar__user {
   margin: 0;
-  color: var(--muted);
+  padding: 0.55rem 0.95rem;
+  color: var(--accent);
+  font: inherit;
   font-size: 0.95rem;
-  font-weight: 600;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  background: rgba(15, 110, 98, 0.1);
+  border: 1.5px solid var(--accent);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.auth-bar__user:hover {
+  color: #fff;
+  background: var(--accent);
+}
+
+.auth-bar__user:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 .auth-bar__button {

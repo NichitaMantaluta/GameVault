@@ -1,0 +1,299 @@
+.account-page {
+  width: min(1120px, calc(100% - 2rem));
+  margin: 0 auto;
+  padding: 0 0 3.5rem;
+}
+
+.account-page__title {
+  margin: 0 0 1.5rem;
+  font-size: clamp(1.8rem, 4vw, 2.6rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+}
+
+.account-page__status,
+.account-page__message p {
+  margin: 0;
+  color: var(--muted);
+}
+
+.account-page__message {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.85rem;
+  padding: 1.1rem 1.2rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+}
+
+.account-page__button {
+  padding: 0.55rem 0.95rem;
+  color: var(--text);
+  font: inherit;
+  font-weight: 600;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.account-page__button--primary {
+  color: #fff;
+  background: var(--accent);
+  border: 0;
+}
+
+.account-page__button--primary:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.account-page__link {
+  padding: 0;
+  color: var(--accent);
+  font: inherit;
+  font-weight: 600;
+  background: transparent;
+  border: 0;
+  text-decoration: underline;
+  text-underline-offset: 0.18em;
+  cursor: pointer;
+}
+
+.account-page__layout {
+  display: grid;
+  gap: 1.25rem;
+  align-items: start;
+}
+
+.account-page__nav {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  padding: 0.35rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+}
+
+.account-page__nav-item {
+  padding: 0.65rem 0.9rem;
+  color: var(--muted);
+  font: inherit;
+  font-weight: 600;
+  text-align: left;
+  background: transparent;
+  border: 0;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.account-page__nav-item:hover {
+  color: var(--text);
+  background: rgba(15, 110, 98, 0.06);
+}
+
+.account-page__nav-item--active {
+  color: var(--text);
+  background: rgba(15, 110, 98, 0.12);
+}
+
+.account-page__nav-item:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.account-page__content {
+  min-width: 0;
+  padding: 1.15rem 1.25rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+}
+
+.account-page__section-title {
+  margin: 0 0 1rem;
+  font-size: 1.2rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.account-page__fields {
+  display: grid;
+  gap: 0.85rem;
+  margin: 0;
+}
+
+.account-page__fields div {
+  display: grid;
+  gap: 0.2rem;
+  padding-bottom: 0.85rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.account-page__fields div:last-child {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.account-page__fields dt {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.account-page__fields dd {
+  margin: 0;
+  font-weight: 600;
+  word-break: break-word;
+}
+
+.account-page__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.85rem;
+}
+
+.account-page__orders {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.account-page__order {
+  display: grid;
+  gap: 0.35rem 1rem;
+  width: 100%;
+  padding: 0.9rem 1rem;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.account-page__order:hover {
+  border-color: var(--accent);
+}
+
+.account-page__order:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.account-page__order-id {
+  margin: 0;
+  font-weight: 650;
+  word-break: break-all;
+}
+
+.account-page__order-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 1rem;
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+.account-page__order-total {
+  margin: 0;
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.account-page__back {
+  margin: 0 0 1rem;
+}
+
+.account-page__detail-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  margin-bottom: 1.15rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.account-page__detail-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 1.1rem;
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+.account-page__items {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.account-page__item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.35rem 1rem;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.account-page__item:last-child {
+  border-bottom: 0;
+}
+
+.account-page__item-name {
+  margin: 0;
+  font-weight: 650;
+}
+
+.account-page__item-price {
+  margin: 0;
+  color: var(--accent);
+  font-weight: 650;
+}
+
+@media (min-width: 800px) {
+  .account-page__layout {
+    grid-template-columns: 200px minmax(0, 1fr);
+    gap: 1.5rem;
+  }
+
+  .account-page__nav {
+    flex-direction: column;
+    padding: 0.5rem;
+  }
+
+  .account-page__nav-item {
+    width: 100%;
+  }
+
+  .account-page__order {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+  }
+
+  .account-page__order-total {
+    justify-self: end;
+  }
+}
