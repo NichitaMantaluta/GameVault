@@ -25,6 +25,7 @@ TestResults/
 ## Secrets / local config
 .env
 .env.*
+!.env.example
 **/appsettings.*.local.json
 **/appsettings.Local.json
 **/secrets.json
