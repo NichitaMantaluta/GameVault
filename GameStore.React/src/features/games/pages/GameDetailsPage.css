@@ -164,6 +164,16 @@
   border-color: var(--accent);
 }
 
+.game-details__button--owned {
+  color: var(--muted);
+  cursor: default;
+}
+
+.game-details__button--owned:disabled {
+  cursor: default;
+  opacity: 1;
+}
+
 .game-details__button:disabled {
   cursor: not-allowed;
   opacity: 0.65;

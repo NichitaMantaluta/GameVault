@@ -14,11 +14,12 @@ type GameCardProps = {
 
 export function GameCard({ game }: GameCardProps) {
   const { isAuthenticated, login } = useAuth()
-  const { addItem, containsGame } = useCart()
+  const { addItem, containsGame, ownsGame } = useCart()
   const [imageFailed, setImageFailed] = useState(false)
   const [isAdding, setIsAdding] = useState(false)
   const [addError, setAddError] = useState<string | null>(null)
   const showImage = Boolean(game.imageUrl) && !imageFailed
+  const owned = ownsGame(game.id)
   const inCart = containsGame(game.id)
   const detailsPath = `/games/${game.id}`
 
@@ -29,6 +30,10 @@ export function GameCard({ game }: GameCardProps) {
   async function handleCartClick() {
     if (!isAuthenticated) {
       login()
+      return
+    }
+
+    if (owned) {
       return
     }
 
@@ -48,6 +53,13 @@ export function GameCard({ game }: GameCardProps) {
       setIsAdding(false)
     }
   }
+
+  const cartLabel = owned ? 'Owned' : isAdding ? 'Adding…' : inCart ? 'In cart' : 'Add to cart'
+  const cartClassName = owned
+    ? 'game-card__cart game-card__cart--owned'
+    : inCart
+      ? 'game-card__cart game-card__cart--in-cart'
+      : 'game-card__cart'
 
   return (
     <article className="game-card">
@@ -85,11 +97,11 @@ export function GameCard({ game }: GameCardProps) {
         <p className="game-card__price">{formatUsd(game.price)}</p>
         <button
           type="button"
-          className={inCart ? 'game-card__cart game-card__cart--in-cart' : 'game-card__cart'}
+          className={cartClassName}
           onClick={() => void handleCartClick()}
-          disabled={isAdding}
+          disabled={owned || isAdding}
         >
-          {isAdding ? 'Adding…' : inCart ? 'In cart' : 'Add to cart'}
+          {cartLabel}
         </button>
         {addError ? (
           <p className="game-card__error" role="alert">

@@ -8,6 +8,7 @@ import {
   type ReactNode,
 } from 'react'
 import { useAuth } from '../auth/AuthProvider'
+import { getOwnedGames } from '../orders/api/ordersApi'
 import { addCartItem, emptyCart, getCart, removeCartItem } from './api/cartApi'
 import type { GetCartResponse } from './types/cart'
 
@@ -18,6 +19,7 @@ type CartContextValue = {
   error: string | null
   reload: () => void
   containsGame: (gameId: string) => boolean
+  ownsGame: (gameId: string) => boolean
   addItem: (gameId: string) => Promise<void>
   removeItem: (gameId: string) => Promise<void>
 }
@@ -27,6 +29,7 @@ const CartContext = createContext<CartContextValue | null>(null)
 export function CartProvider({ children }: { children: ReactNode }) {
   const { isReady, isAuthenticated } = useAuth()
   const [cart, setCart] = useState<GetCartResponse>(emptyCart)
+  const [ownedGameIds, setOwnedGameIds] = useState<ReadonlySet<string>>(() => new Set())
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [reloadKey, setReloadKey] = useState(0)
@@ -38,6 +41,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
     if (!isAuthenticated) {
       setCart(emptyCart)
+      setOwnedGameIds(new Set())
       setError(null)
       setIsLoading(false)
       return
@@ -45,19 +49,24 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
     const controller = new AbortController()
 
-    async function loadCart() {
+    async function loadCartAndLibrary() {
       setIsLoading(true)
       setError(null)
 
       try {
-        const response = await getCart(controller.signal)
-        setCart(response)
+        const [cartResponse, ownedResponse] = await Promise.all([
+          getCart(controller.signal),
+          getOwnedGames(controller.signal),
+        ])
+        setCart(cartResponse)
+        setOwnedGameIds(new Set(ownedResponse.gameIds))
       } catch (cause) {
         if (isAbortError(cause)) {
           return
         }
 
         setCart(emptyCart)
+        setOwnedGameIds(new Set())
         setError(cause instanceof Error ? cause.message : 'Failed to load cart.')
       } finally {
         if (!controller.signal.aborted) {
@@ -66,7 +75,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       }
     }
 
-    void loadCart()
+    void loadCartAndLibrary()
 
     return () => controller.abort()
   }, [isAuthenticated, isReady, reloadKey])
@@ -92,10 +101,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
       error,
       reload: () => setReloadKey((current) => current + 1),
       containsGame: (gameId: string) => cart.items.some((item) => item.gameId === gameId),
+      ownsGame: (gameId: string) => ownedGameIds.has(gameId),
       addItem,
       removeItem,
     }),
-    [addItem, cart, error, isLoading, removeItem],
+    [addItem, cart, error, isLoading, ownedGameIds, removeItem],
   )
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>

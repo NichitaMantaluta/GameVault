@@ -99,7 +99,23 @@ public class StripeWebhookTests : IClassFixture<GameStoreApiFactory>
             sessionId,
             GameStoreApiFactory.StripeWebhookSecret)).StatusCode);
 
-        await client.PostAsJsonAsync("/api/cart/items", new { gameId });
+        // AddCartItem blocks owned games; put the item back in the cart directly.
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<GameStoreDbContext>();
+            var order = await db.Orders.SingleAsync(existing => existing.Id == created.Id);
+            var cart = await db.Carts
+                .Include(existing => existing.Items)
+                .SingleAsync(existing => existing.UserId == order.UserId);
+            cart.Items.Clear();
+            cart.Items.Add(new GameStore.Api.Domain.Carts.CartItem
+            {
+                CartId = cart.Id,
+                GameId = gameId,
+                Quantity = 1
+            });
+            await db.SaveChangesAsync();
+        }
 
         var response = await StripeWebhookTestHelper.PostCheckoutSessionCompletedAsync(
             anonymous,
@@ -109,9 +125,9 @@ public class StripeWebhookTests : IClassFixture<GameStoreApiFactory>
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-        var cart = await client.GetFromJsonAsync<GetCartResponse>("/api/cart", TestJson.Options);
-        Assert.NotNull(cart);
-        Assert.Equal(gameId, Assert.Single(cart.Items).GameId);
+        var cartResponse = await client.GetFromJsonAsync<GetCartResponse>("/api/cart", TestJson.Options);
+        Assert.NotNull(cartResponse);
+        Assert.Equal(gameId, Assert.Single(cartResponse.Items).GameId);
     }
 
     [Fact]

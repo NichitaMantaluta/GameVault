@@ -215,8 +215,32 @@ public class CreateOrderTests : IClassFixture<GameStoreApiFactory>
             GameStoreApiFactory.StripeWebhookSecret);
         Assert.Equal(HttpStatusCode.OK, webhook.StatusCode);
 
-        await client.PostAsJsonAsync("/api/cart/items", new { gameId = owned.Id });
-        await client.PostAsJsonAsync("/api/cart/items", new { gameId = extra.Id });
+        // AddCartItem blocks owned games; seed the cart directly to verify checkout still rejects them.
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<GameStoreDbContext>();
+            var cart = await db.Carts
+                .Include(existing => existing.Items)
+                .SingleOrDefaultAsync(existing => existing.UserId == userId);
+
+            if (cart is null)
+            {
+                cart = new GameStore.Api.Domain.Carts.Cart
+                {
+                    Id = Guid.NewGuid(),
+                    UserId = userId
+                };
+                db.Carts.Add(cart);
+            }
+            else
+            {
+                cart.Items.Clear();
+            }
+
+            cart.Items.Add(new CartItem { CartId = cart.Id, GameId = owned.Id, Quantity = 1 });
+            cart.Items.Add(new CartItem { CartId = cart.Id, GameId = extra.Id, Quantity = 1 });
+            await db.SaveChangesAsync();
+        }
 
         var response = await client.PostAsync("/api/orders", null);
 
@@ -226,17 +250,19 @@ public class CreateOrderTests : IClassFixture<GameStoreApiFactory>
             $"Game '{owned.Name}' is already owned.",
             problem.GetProperty("detail").GetString());
 
-        using var scope = _factory.Services.CreateScope();
-        var db = scope.ServiceProvider.GetRequiredService<GameStoreDbContext>();
-        Assert.Equal(1, await db.Orders.CountAsync(order => order.UserId == userId));
-        Assert.Equal(1, await db.OrderItems.CountAsync(item => item.GameId == owned.Id));
-        Assert.False(await db.OrderItems.AnyAsync(item => item.GameId == extra.Id));
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<GameStoreDbContext>();
+            Assert.Equal(1, await db.Orders.CountAsync(order => order.UserId == userId));
+            Assert.Equal(1, await db.OrderItems.CountAsync(item => item.GameId == owned.Id));
+            Assert.False(await db.OrderItems.AnyAsync(item => item.GameId == extra.Id));
+        }
 
-        var cart = await client.GetFromJsonAsync<GetCartResponse>("/api/cart", TestJson.Options);
-        Assert.NotNull(cart);
-        Assert.Equal(2, cart.Items.Count);
-        Assert.Contains(cart.Items, item => item.GameId == owned.Id);
-        Assert.Contains(cart.Items, item => item.GameId == extra.Id);
+        var cartResponse = await client.GetFromJsonAsync<GetCartResponse>("/api/cart", TestJson.Options);
+        Assert.NotNull(cartResponse);
+        Assert.Equal(2, cartResponse.Items.Count);
+        Assert.Contains(cartResponse.Items, item => item.GameId == owned.Id);
+        Assert.Contains(cartResponse.Items, item => item.GameId == extra.Id);
     }
 
     [Fact]

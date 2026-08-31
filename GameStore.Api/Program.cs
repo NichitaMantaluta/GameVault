@@ -11,6 +11,7 @@ using GameStore.Api.Features.Games.UpdateGame;
 using GameStore.Api.Features.Orders.CreateOrder;
 using GameStore.Api.Features.Orders.GetOrder;
 using GameStore.Api.Features.Orders.GetOrders;
+using GameStore.Api.Features.Orders.GetOwnedGames;
 using GameStore.Api.Features.Orders.StripeWebhook;
 using GameStore.Api.Integrations.Payments;
 using GameStore.Api.Persistence;
@@ -79,6 +80,7 @@ app.MapRemoveCartItem();
 app.MapCreateOrder();
 app.MapGetOrder();
 app.MapGetOrders();
+app.MapGetOwnedGames();
 app.MapStripeWebhook();
 
 app.Run();

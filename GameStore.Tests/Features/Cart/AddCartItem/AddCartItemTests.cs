@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 using GameStore.Api.Features.Cart.GetCart;
+using GameStore.Api.Features.Orders.CreateOrder;
 using GameStore.Api.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -97,6 +98,36 @@ public class AddCartItemTests : IClassFixture<GameStoreApiFactory>
         var response = await client.PostAsJsonAsync("/api/cart/items", new { gameId = game.Id });
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task AddCartItem_WhenGameAlreadyOwned_ReturnsBadRequest()
+    {
+        var genreId = await _factory.SeedGenreAsync();
+        var game = await _factory.SeedGameAsync(genreId, name: $"Owned Add {Guid.NewGuid()}", price: 15m);
+        var userId = $"owned-add-{Guid.NewGuid()}";
+        var client = _factory.CreateUserClient(userId);
+        var anonymous = _factory.CreateClient();
+
+        await client.PostAsJsonAsync("/api/cart/items", new { gameId = game.Id });
+        var createResponse = await client.PostAsync("/api/orders", null);
+        var created = await createResponse.Content.ReadFromJsonAsync<CreateOrderResponse>(TestJson.Options);
+        Assert.NotNull(created);
+
+        var webhook = await StripeWebhookTestHelper.PostCheckoutSessionCompletedAsync(
+            anonymous,
+            created.Id,
+            created.CheckoutUrl.Split('/').Last(),
+            GameStoreApiFactory.StripeWebhookSecret);
+        Assert.Equal(HttpStatusCode.OK, webhook.StatusCode);
+
+        var response = await client.PostAsJsonAsync("/api/cart/items", new { gameId = game.Id });
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        var problem = await response.Content.ReadFromJsonAsync<JsonElement>(TestJson.Options);
+        Assert.Equal(
+            $"Game '{game.Name}' is already owned.",
+            problem.GetProperty("detail").GetString());
     }
 
     [Fact]

@@ -66,12 +66,7 @@ public static class CreateOrderEndpoint
             }
         }
 
-        var ownedGameIds = await db.Orders
-            .AsNoTracking()
-            .Where(order => order.UserId == userId && order.Status == OrderStatus.Completed)
-            .SelectMany(order => order.Items)
-            .Select(item => item.GameId)
-            .ToHashSetAsync(cancellationToken);
+        var ownedGameIds = await OwnedGamesQuery.GetOwnedGameIdsAsync(db, userId, cancellationToken);
 
         var alreadyOwned = cart.Items.FirstOrDefault(item => ownedGameIds.Contains(item.GameId));
         if (alreadyOwned is not null)

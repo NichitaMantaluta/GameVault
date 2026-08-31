@@ -15,7 +15,7 @@ type GameDetailsPageProps = {
 
 export function GameDetailsPage({ gameId }: GameDetailsPageProps) {
   const { isAuthenticated, login } = useAuth()
-  const { addItem, containsGame } = useCart()
+  const { addItem, containsGame, ownsGame } = useCart()
   const [game, setGame] = useState<GetGameResponse | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -64,6 +64,7 @@ export function GameDetailsPage({ gameId }: GameDetailsPageProps) {
     return () => controller.abort()
   }, [gameId, reloadKey])
 
+  const owned = game ? ownsGame(game.id) : false
   const inCart = game ? containsGame(game.id) : false
   const showImage = Boolean(game?.imageUrl) && !imageFailed
 
@@ -74,6 +75,10 @@ export function GameDetailsPage({ gameId }: GameDetailsPageProps) {
 
     if (!isAuthenticated) {
       login()
+      return
+    }
+
+    if (owned) {
       return
     }
 
@@ -95,6 +100,13 @@ export function GameDetailsPage({ gameId }: GameDetailsPageProps) {
       setIsAdding(false)
     }
   }
+
+  const cartLabel = owned ? 'Owned' : isAdding ? 'Adding…' : inCart ? 'In cart' : 'Add to cart'
+  const cartButtonClassName = owned
+    ? 'game-details__button game-details__button--owned'
+    : inCart
+      ? 'game-details__button game-details__button--secondary'
+      : 'game-details__button game-details__button--primary'
 
   return (
     <main className="game-details">
@@ -168,17 +180,18 @@ export function GameDetailsPage({ gameId }: GameDetailsPageProps) {
             <div className="game-details__actions">
               <button
                 type="button"
-                className={
-                  inCart
-                    ? 'game-details__button game-details__button--secondary'
-                    : 'game-details__button game-details__button--primary'
-                }
+                className={cartButtonClassName}
                 onClick={() => void handleCartClick()}
-                disabled={isAdding || (!inCart && !game.isActive)}
+                disabled={owned || isAdding || (!owned && !inCart && !game.isActive)}
               >
-                {isAdding ? 'Adding…' : inCart ? 'In cart' : 'Add to cart'}
+                {cartLabel}
               </button>
-              {addSuccess || inCart ? (
+              {owned ? (
+                <p className="game-details__feedback" role="status">
+                  You already own this game.
+                </p>
+              ) : null}
+              {!owned && (addSuccess || inCart) ? (
                 <p className="game-details__feedback" role="status">
                   {inCart
                     ? 'This game is in your cart.'

@@ -1,5 +1,6 @@
 using GameStore.Api.Authentication;
 using GameStore.Api.Domain.Carts;
+using GameStore.Api.Features.Orders;
 using GameStore.Api.Persistence;
 using Microsoft.EntityFrameworkCore;
 
@@ -47,6 +48,14 @@ public static class AddCartItemEndpoint
         {
             return Results.Problem(
                 detail: $"Game '{request.GameId}' is not available.",
+                statusCode: StatusCodes.Status400BadRequest);
+        }
+
+        var ownedGameIds = await OwnedGamesQuery.GetOwnedGameIdsAsync(db, userId, cancellationToken);
+        if (ownedGameIds.Contains(request.GameId))
+        {
+            return Results.Problem(
+                detail: $"Game '{game.Name}' is already owned.",
                 statusCode: StatusCodes.Status400BadRequest);
         }
 
