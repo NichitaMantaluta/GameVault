@@ -1,4 +1,6 @@
-namespace GameStore.Api.Integrations.Payments;
+using GameStore.Api.Integrations.Payments;
+
+namespace GameStore.Tests;
 
 public sealed class FakePaymentService : IPaymentService
 {

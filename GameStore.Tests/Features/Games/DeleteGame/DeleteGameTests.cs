@@ -9,11 +9,6 @@ namespace GameStore.Tests.Features.Games.DeleteGame;
 
 public class DeleteGameTests : IClassFixture<GameStoreApiFactory>
 {
-    private static readonly JsonSerializerOptions JsonOptions = new()
-    {
-        PropertyNameCaseInsensitive = true
-    };
-
     private readonly GameStoreApiFactory _factory;
     private readonly HttpClient _client;
 
@@ -44,7 +39,7 @@ public class DeleteGameTests : IClassFixture<GameStoreApiFactory>
         var catalogResponse = await _client.GetAsync("/api/games");
         Assert.Equal(HttpStatusCode.OK, catalogResponse.StatusCode);
 
-        var catalog = await catalogResponse.Content.ReadFromJsonAsync<GetGamesResponse>(JsonOptions);
+        var catalog = await catalogResponse.Content.ReadFromJsonAsync<GetGamesResponse>(TestJson.Options);
         Assert.NotNull(catalog);
         Assert.DoesNotContain(catalog.Items, item => item.Id == game.Id);
     }

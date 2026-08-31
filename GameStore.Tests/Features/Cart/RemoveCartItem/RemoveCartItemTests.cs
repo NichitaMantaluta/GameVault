@@ -9,11 +9,6 @@ namespace GameStore.Tests.Features.Cart.RemoveCartItem;
 
 public class RemoveCartItemTests : IClassFixture<GameStoreApiFactory>
 {
-    private static readonly JsonSerializerOptions JsonOptions = new()
-    {
-        PropertyNameCaseInsensitive = true
-    };
-
     private readonly GameStoreApiFactory _factory;
 
     public RemoveCartItemTests(GameStoreApiFactory factory)
@@ -44,7 +39,7 @@ public class RemoveCartItemTests : IClassFixture<GameStoreApiFactory>
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
 
         var cartResponse = await client.GetAsync("/api/cart");
-        var cart = await cartResponse.Content.ReadFromJsonAsync<GetCartResponse>(JsonOptions);
+        var cart = await cartResponse.Content.ReadFromJsonAsync<GetCartResponse>(TestJson.Options);
         Assert.NotNull(cart);
         Assert.Empty(cart.Items);
         Assert.Equal(0m, cart.Subtotal);

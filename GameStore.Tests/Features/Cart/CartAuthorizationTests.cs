@@ -7,11 +7,6 @@ namespace GameStore.Tests.Features.Cart;
 
 public class CartAuthorizationTests : IClassFixture<GameStoreApiFactory>
 {
-    private static readonly JsonSerializerOptions JsonOptions = new()
-    {
-        PropertyNameCaseInsensitive = true
-    };
-
     private readonly GameStoreApiFactory _factory;
 
     public CartAuthorizationTests(GameStoreApiFactory factory)
@@ -36,8 +31,8 @@ public class CartAuthorizationTests : IClassFixture<GameStoreApiFactory>
         Assert.Equal(HttpStatusCode.OK, ownerCartResponse.StatusCode);
         Assert.Equal(HttpStatusCode.OK, otherCartResponse.StatusCode);
 
-        var ownerCart = await ownerCartResponse.Content.ReadFromJsonAsync<GetCartResponse>(JsonOptions);
-        var otherCart = await otherCartResponse.Content.ReadFromJsonAsync<GetCartResponse>(JsonOptions);
+        var ownerCart = await ownerCartResponse.Content.ReadFromJsonAsync<GetCartResponse>(TestJson.Options);
+        var otherCart = await otherCartResponse.Content.ReadFromJsonAsync<GetCartResponse>(TestJson.Options);
 
         Assert.NotNull(ownerCart);
         Assert.Single(ownerCart.Items);
@@ -54,7 +49,7 @@ public class CartAuthorizationTests : IClassFixture<GameStoreApiFactory>
         Assert.Equal(HttpStatusCode.NotFound, otherUpdate.StatusCode);
         Assert.Equal(HttpStatusCode.NotFound, otherDelete.StatusCode);
 
-        var ownerCartAfter = await owner.GetFromJsonAsync<GetCartResponse>("/api/cart", JsonOptions);
+        var ownerCartAfter = await owner.GetFromJsonAsync<GetCartResponse>("/api/cart", TestJson.Options);
         Assert.NotNull(ownerCartAfter);
         Assert.Equal(1, Assert.Single(ownerCartAfter.Items).Quantity);
     }

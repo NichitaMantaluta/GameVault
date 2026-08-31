@@ -1,14 +1,10 @@
 import { useState } from 'react'
 import { navigate } from '../../../app/navigation'
+import { formatUsd } from '../../account/format'
 import { useAuth } from '../../auth/AuthProvider'
 import { useCart } from '../../cart/CartProvider'
 import type { GetGamesItem } from '../types/games'
 import './GameCard.css'
-
-const priceFormatter = new Intl.NumberFormat('en-US', {
-  style: 'currency',
-  currency: 'USD',
-})
 
 const coverTones = ['#1f4d4a', '#3d2b56', '#4a3728', '#1e3a5f', '#4a2c2a', '#2d4a1f']
 
@@ -86,7 +82,7 @@ export function GameCard({ game }: GameCardProps) {
             {game.name}
           </button>
         </h2>
-        <p className="game-card__price">{priceFormatter.format(game.price)}</p>
+        <p className="game-card__price">{formatUsd(game.price)}</p>
         <button
           type="button"
           className={inCart ? 'game-card__cart game-card__cart--in-cart' : 'game-card__cart'}

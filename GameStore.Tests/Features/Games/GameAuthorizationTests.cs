@@ -12,11 +12,6 @@ namespace GameStore.Tests.Features.Games;
 
 public class GameAuthorizationTests : IClassFixture<GameStoreApiFactory>
 {
-    private static readonly JsonSerializerOptions JsonOptions = new()
-    {
-        PropertyNameCaseInsensitive = true
-    };
-
     private static readonly object ValidGameRequest = new
     {
         name = "Super Mario Bros. 3",
@@ -69,7 +64,7 @@ public class GameAuthorizationTests : IClassFixture<GameStoreApiFactory>
 
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
 
-        var body = await response.Content.ReadFromJsonAsync<CreateGameResponse>(JsonOptions);
+        var body = await response.Content.ReadFromJsonAsync<CreateGameResponse>(TestJson.Options);
         Assert.NotNull(body);
         Assert.Equal(request.name, body.Name);
     }
@@ -113,7 +108,7 @@ public class GameAuthorizationTests : IClassFixture<GameStoreApiFactory>
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-        var body = await response.Content.ReadFromJsonAsync<UpdateGameResponse>(JsonOptions);
+        var body = await response.Content.ReadFromJsonAsync<UpdateGameResponse>(TestJson.Options);
         Assert.NotNull(body);
         Assert.Equal(request.name, body.Name);
     }
@@ -171,7 +166,7 @@ public class GameAuthorizationTests : IClassFixture<GameStoreApiFactory>
         Assert.Equal(HttpStatusCode.OK, anonymousResponse.StatusCode);
         Assert.Equal(HttpStatusCode.OK, customerResponse.StatusCode);
 
-        var catalog = await anonymousResponse.Content.ReadFromJsonAsync<GetGamesResponse>(JsonOptions);
+        var catalog = await anonymousResponse.Content.ReadFromJsonAsync<GetGamesResponse>(TestJson.Options);
         Assert.NotNull(catalog);
         Assert.Contains(catalog.Items, item => item.Name == "Public Game");
     }
@@ -190,7 +185,7 @@ public class GameAuthorizationTests : IClassFixture<GameStoreApiFactory>
         Assert.Equal(HttpStatusCode.OK, anonymousResponse.StatusCode);
         Assert.Equal(HttpStatusCode.OK, customerResponse.StatusCode);
 
-        var body = await anonymousResponse.Content.ReadFromJsonAsync<GetGameResponse>(JsonOptions);
+        var body = await anonymousResponse.Content.ReadFromJsonAsync<GetGameResponse>(TestJson.Options);
         Assert.NotNull(body);
         Assert.Equal(game.Id, body.Id);
     }

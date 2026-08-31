@@ -1,15 +1,11 @@
 import { useEffect, useState } from 'react'
 import { navigate } from '../../../app/navigation'
+import { formatUsd } from '../../account/format'
 import { useAuth } from '../../auth/AuthProvider'
 import { useCart } from '../../cart/CartProvider'
 import { GameNotFoundError, getGame } from '../api/gamesApi'
 import type { GetGameResponse } from '../types/games'
 import './GameDetailsPage.css'
-
-const priceFormatter = new Intl.NumberFormat('en-US', {
-  style: 'currency',
-  currency: 'USD',
-})
 
 const coverTones = ['#1f4d4a', '#3d2b56', '#4a3728', '#1e3a5f', '#4a2c2a', '#2d4a1f']
 
@@ -159,7 +155,7 @@ export function GameDetailsPage({ gameId }: GameDetailsPageProps) {
           <div className="game-details__info">
             <p className="game-details__genre">{game.genreName}</p>
             <h1 className="game-details__name">{game.name}</h1>
-            <p className="game-details__price">{priceFormatter.format(game.price)}</p>
+            <p className="game-details__price">{formatUsd(game.price)}</p>
 
             {game.description.trim() ? (
               <p className="game-details__description">{game.description}</p>

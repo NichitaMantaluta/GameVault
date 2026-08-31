@@ -1,20 +1,11 @@
 using System.Net;
 using System.Net.Http.Json;
-using System.Text.Json;
-using GameStore.Api.Domain.Games;
 using GameStore.Api.Features.Games.GetGame;
-using GameStore.Api.Persistence;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace GameStore.Tests.Features.Games.GetGame;
 
 public class GetGameTests : IClassFixture<GameStoreApiFactory>
 {
-    private static readonly JsonSerializerOptions JsonOptions = new()
-    {
-        PropertyNameCaseInsensitive = true
-    };
-
     private readonly GameStoreApiFactory _factory;
     private readonly HttpClient _client;
 
@@ -33,7 +24,7 @@ public class GetGameTests : IClassFixture<GameStoreApiFactory>
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-        var body = await response.Content.ReadFromJsonAsync<GetGameResponse>(JsonOptions);
+        var body = await response.Content.ReadFromJsonAsync<GetGameResponse>(TestJson.Options);
         Assert.NotNull(body);
         Assert.Equal(game.Id, body.Id);
         Assert.Equal(game.Name, body.Name);
@@ -56,7 +47,7 @@ public class GetGameTests : IClassFixture<GameStoreApiFactory>
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-        var body = await response.Content.ReadFromJsonAsync<GetGameResponse>(JsonOptions);
+        var body = await response.Content.ReadFromJsonAsync<GetGameResponse>(TestJson.Options);
         Assert.NotNull(body);
         Assert.Equal(game.Id, body.Id);
         Assert.False(body.IsActive);
@@ -80,32 +71,12 @@ public class GetGameTests : IClassFixture<GameStoreApiFactory>
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
-    private async Task<Game> SeedGameAsync(bool isActive = true)
+    private async Task<GameStore.Api.Domain.Games.Game> SeedGameAsync(bool isActive = true)
     {
-        using var scope = _factory.Services.CreateScope();
-        var db = scope.ServiceProvider.GetRequiredService<GameStoreDbContext>();
-        await db.Database.EnsureCreatedAsync();
-
-        var genre = new Genre { Name = "Platformer" };
-        db.Genres.Add(genre);
-        await db.SaveChangesAsync();
-
-        var now = DateTimeOffset.UtcNow;
-        var game = new Game
-        {
-            Id = Guid.NewGuid(),
-            Name = "Super Mario Bros. 3",
-            Description = "A classic platform game.",
-            Price = 19.99m,
-            ImageUrl = "https://example.com/super-mario-bros-3.png",
-            GenreId = genre.Id,
-            CreatedAt = now,
-            UpdatedAt = now,
-            IsActive = isActive
-        };
-
-        db.Games.Add(game);
-        await db.SaveChangesAsync();
-        return game;
+        var genreId = await _factory.SeedGenreAsync();
+        return await _factory.SeedGameAsync(
+            genreId,
+            isActive: isActive,
+            imageUrl: "https://example.com/super-mario-bros-3.png");
     }
 }

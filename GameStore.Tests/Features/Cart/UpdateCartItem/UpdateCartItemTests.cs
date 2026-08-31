@@ -7,11 +7,6 @@ namespace GameStore.Tests.Features.Cart.UpdateCartItem;
 
 public class UpdateCartItemTests : IClassFixture<GameStoreApiFactory>
 {
-    private static readonly JsonSerializerOptions JsonOptions = new()
-    {
-        PropertyNameCaseInsensitive = true
-    };
-
     private readonly GameStoreApiFactory _factory;
 
     public UpdateCartItemTests(GameStoreApiFactory factory)
@@ -45,7 +40,7 @@ public class UpdateCartItemTests : IClassFixture<GameStoreApiFactory>
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-        var body = await response.Content.ReadFromJsonAsync<GetCartResponse>(JsonOptions);
+        var body = await response.Content.ReadFromJsonAsync<GetCartResponse>(TestJson.Options);
         Assert.NotNull(body);
         var item = Assert.Single(body.Items);
         Assert.Equal(3, item.Quantity);

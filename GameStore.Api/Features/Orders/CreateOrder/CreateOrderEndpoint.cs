@@ -77,7 +77,7 @@ public static class CreateOrderEndpoint
         if (alreadyOwned is not null)
         {
             return Results.Problem(
-                detail: $"Game '{alreadyOwned.GameId}' is already owned.",
+                detail: $"Game '{games[alreadyOwned.GameId].Name}' is already owned.",
                 statusCode: StatusCodes.Status400BadRequest);
         }
 

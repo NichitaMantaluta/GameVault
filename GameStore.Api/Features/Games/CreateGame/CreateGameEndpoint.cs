@@ -7,11 +7,6 @@ namespace GameStore.Api.Features.Games.CreateGame;
 
 public static class CreateGameEndpoint
 {
-    // Keep in sync with GameStoreDbContext Game property max lengths.
-    private const int NameMaxLength = 200;
-    private const int DescriptionMaxLength = 4000;
-    private const int ImageUrlMaxLength = 2048;
-
     public static RouteHandlerBuilder MapCreateGame(this IEndpointRouteBuilder endpoints)
     {
         return endpoints.MapPost("/api/games", HandleAsync)
@@ -23,7 +18,12 @@ public static class CreateGameEndpoint
         GameStoreDbContext db,
         CancellationToken cancellationToken)
     {
-        var validationErrors = Validate(request);
+        var validationErrors = GameMutationValidator.Validate(
+            request.Name,
+            request.Description,
+            request.Price,
+            request.GenreId,
+            request.ImageUrl);
         if (validationErrors.Count > 0)
         {
             return Results.ValidationProblem(validationErrors);
@@ -46,7 +46,7 @@ public static class CreateGameEndpoint
             Name = request.Name.Trim(),
             Description = request.Description.Trim(),
             Price = request.Price,
-            ImageUrl = NormalizeImageUrl(request.ImageUrl),
+            ImageUrl = GameMutationValidator.NormalizeImageUrl(request.ImageUrl),
             GenreId = request.GenreId,
             CreatedAt = now,
             UpdatedAt = now,
@@ -68,51 +68,5 @@ public static class CreateGameEndpoint
             game.IsActive);
 
         return Results.Created($"/api/games/{game.Id}", response);
-    }
-
-    private static Dictionary<string, string[]> Validate(CreateGameRequest request)
-    {
-        var errors = new Dictionary<string, string[]>();
-
-        if (string.IsNullOrWhiteSpace(request.Name))
-        {
-            errors["Name"] = ["Name is required."];
-        }
-        else if (request.Name.Trim().Length > NameMaxLength)
-        {
-            errors["Name"] = [$"Name must be {NameMaxLength} characters or fewer."];
-        }
-
-        if (string.IsNullOrWhiteSpace(request.Description))
-        {
-            errors["Description"] = ["Description is required."];
-        }
-        else if (request.Description.Trim().Length > DescriptionMaxLength)
-        {
-            errors["Description"] = [$"Description must be {DescriptionMaxLength} characters or fewer."];
-        }
-
-        if (request.Price < 0)
-        {
-            errors["Price"] = ["Price must be greater than or equal to 0."];
-        }
-
-        if (request.GenreId <= 0)
-        {
-            errors["GenreId"] = ["GenreId is required."];
-        }
-
-        var imageUrl = NormalizeImageUrl(request.ImageUrl);
-        if (imageUrl is not null && imageUrl.Length > ImageUrlMaxLength)
-        {
-            errors["ImageUrl"] = [$"ImageUrl must be {ImageUrlMaxLength} characters or fewer."];
-        }
-
-        return errors;
-    }
-
-    private static string? NormalizeImageUrl(string? imageUrl)
-    {
-        return string.IsNullOrWhiteSpace(imageUrl) ? null : imageUrl.Trim();
     }
 }

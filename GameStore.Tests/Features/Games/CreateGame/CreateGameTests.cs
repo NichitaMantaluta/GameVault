@@ -10,11 +10,6 @@ namespace GameStore.Tests.Features.Games.CreateGame;
 
 public class CreateGameTests : IClassFixture<GameStoreApiFactory>
 {
-    private static readonly JsonSerializerOptions JsonOptions = new()
-    {
-        PropertyNameCaseInsensitive = true
-    };
-
     private readonly GameStoreApiFactory _factory;
     private readonly HttpClient _client;
 
@@ -41,7 +36,7 @@ public class CreateGameTests : IClassFixture<GameStoreApiFactory>
 
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
 
-        var body = await response.Content.ReadFromJsonAsync<CreateGameResponse>(JsonOptions);
+        var body = await response.Content.ReadFromJsonAsync<CreateGameResponse>(TestJson.Options);
         Assert.NotNull(body);
         Assert.NotEqual(Guid.Empty, body.Id);
         Assert.Equal(request.name, body.Name);
@@ -203,7 +198,7 @@ public class CreateGameTests : IClassFixture<GameStoreApiFactory>
 
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
 
-        var body = await response.Content.ReadFromJsonAsync<CreateGameResponse>(JsonOptions);
+        var body = await response.Content.ReadFromJsonAsync<CreateGameResponse>(TestJson.Options);
         Assert.NotNull(body);
         Assert.NotEqual(clientSuppliedId, body.Id);
         Assert.True(body.IsActive);
@@ -228,7 +223,7 @@ public class CreateGameTests : IClassFixture<GameStoreApiFactory>
 
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
 
-        var body = await response.Content.ReadFromJsonAsync<CreateGameResponse>(JsonOptions);
+        var body = await response.Content.ReadFromJsonAsync<CreateGameResponse>(TestJson.Options);
         Assert.NotNull(body);
         Assert.Equal(imageUrl, body.ImageUrl);
 

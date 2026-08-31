@@ -64,7 +64,6 @@ temp/
 coverage/
 *.coverage
 *.coveragexml
-TestResults/
 
 ## Frontend (when added)
 node_modules/

@@ -29,12 +29,6 @@ public class GameStoreApiFactory : WebApplicationFactory<Program>
         Environment.SetEnvironmentVariable("Authentication__Audience", TestJwt.Audience);
         Environment.SetEnvironmentVariable("Authentication__RequireHttpsMetadata", "false");
         Environment.SetEnvironmentVariable("Stripe__WebhookSecret", StripeWebhookSecret);
-        Environment.SetEnvironmentVariable(
-            "Stripe__SuccessUrl",
-            "http://localhost:5173/checkout/success?orderId={ORDER_ID}");
-        Environment.SetEnvironmentVariable(
-            "Stripe__CancelUrl",
-            "http://localhost:5173/checkout/cancel");
     }
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
@@ -43,8 +37,6 @@ public class GameStoreApiFactory : WebApplicationFactory<Program>
         builder.UseSetting("Authentication:Audience", TestJwt.Audience);
         builder.UseSetting("Authentication:RequireHttpsMetadata", "false");
         builder.UseSetting("Stripe:WebhookSecret", StripeWebhookSecret);
-        builder.UseSetting("Stripe:SuccessUrl", "http://localhost:5173/checkout/success?orderId={ORDER_ID}");
-        builder.UseSetting("Stripe:CancelUrl", "http://localhost:5173/checkout/cancel");
 
         builder.ConfigureTestServices(services =>
         {

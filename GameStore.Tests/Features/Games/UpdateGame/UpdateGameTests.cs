@@ -2,7 +2,6 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
-using GameStore.Api.Domain.Games;
 using GameStore.Api.Features.Games.GetGames;
 using GameStore.Api.Features.Games.UpdateGame;
 using GameStore.Api.Persistence;
@@ -12,11 +11,6 @@ namespace GameStore.Tests.Features.Games.UpdateGame;
 
 public class UpdateGameTests : IClassFixture<GameStoreApiFactory>
 {
-    private static readonly JsonSerializerOptions JsonOptions = new()
-    {
-        PropertyNameCaseInsensitive = true
-    };
-
     private readonly GameStoreApiFactory _factory;
     private readonly HttpClient _client;
 
@@ -30,14 +24,11 @@ public class UpdateGameTests : IClassFixture<GameStoreApiFactory>
     [Fact]
     public async Task UpdateGame_WithValidRequest_ReturnsOkAndPersistsChanges()
     {
-        var originalGenreId = await _factory.SeedGenreAsync("Platformer");
+        var originalGenreId = await _factory.SeedGenreAsync();
         var newGenreId = await _factory.SeedGenreAsync("Action");
         var createdAt = DateTimeOffset.UtcNow.AddHours(-2);
-        var game = await SeedGameAsync(
+        var game = await _factory.SeedGameAsync(
             originalGenreId,
-            name: "Super Mario Bros. 3",
-            description: "A classic platform game.",
-            price: 19.99m,
             isActive: false,
             createdAt: createdAt,
             updatedAt: createdAt);
@@ -56,7 +47,7 @@ public class UpdateGameTests : IClassFixture<GameStoreApiFactory>
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-        var body = await response.Content.ReadFromJsonAsync<UpdateGameResponse>(JsonOptions);
+        var body = await response.Content.ReadFromJsonAsync<UpdateGameResponse>(TestJson.Options);
         Assert.NotNull(body);
         Assert.Equal(game.Id, body.Id);
         Assert.Equal(request.name, body.Name);
@@ -88,9 +79,8 @@ public class UpdateGameTests : IClassFixture<GameStoreApiFactory>
     {
         var genreId = await _factory.SeedGenreAsync();
         var createdAt = DateTimeOffset.UtcNow.AddHours(-2);
-        var game = await SeedGameAsync(
+        var game = await _factory.SeedGameAsync(
             genreId,
-            isActive: true,
             createdAt: createdAt,
             updatedAt: createdAt);
         var clientSuppliedId = Guid.NewGuid();
@@ -113,7 +103,7 @@ public class UpdateGameTests : IClassFixture<GameStoreApiFactory>
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-        var body = await response.Content.ReadFromJsonAsync<UpdateGameResponse>(JsonOptions);
+        var body = await response.Content.ReadFromJsonAsync<UpdateGameResponse>(TestJson.Options);
         Assert.NotNull(body);
         Assert.Equal(game.Id, body.Id);
         Assert.NotEqual(clientSuppliedId, body.Id);
@@ -126,7 +116,7 @@ public class UpdateGameTests : IClassFixture<GameStoreApiFactory>
     public async Task UpdateGame_WithImageUrl_PersistsImageUrl()
     {
         var genreId = await _factory.SeedGenreAsync();
-        var game = await SeedGameAsync(genreId, imageUrl: "https://example.com/original.png");
+        var game = await _factory.SeedGameAsync(genreId, imageUrl: "https://example.com/original.png");
         const string imageUrl = "https://example.com/updated.png";
         var request = new
         {
@@ -142,7 +132,7 @@ public class UpdateGameTests : IClassFixture<GameStoreApiFactory>
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-        var body = await response.Content.ReadFromJsonAsync<UpdateGameResponse>(JsonOptions);
+        var body = await response.Content.ReadFromJsonAsync<UpdateGameResponse>(TestJson.Options);
         Assert.NotNull(body);
         Assert.Equal(imageUrl, body.ImageUrl);
 
@@ -167,7 +157,7 @@ public class UpdateGameTests : IClassFixture<GameStoreApiFactory>
         decimal price)
     {
         var genreId = await _factory.SeedGenreAsync();
-        var game = await SeedGameAsync(genreId);
+        var game = await _factory.SeedGameAsync(genreId);
         var payload = JsonSerializer.Serialize(new
         {
             name,
@@ -186,7 +176,7 @@ public class UpdateGameTests : IClassFixture<GameStoreApiFactory>
     public async Task UpdateGame_WithNegativePrice_ReturnsValidationProblem()
     {
         var genreId = await _factory.SeedGenreAsync();
-        var game = await SeedGameAsync(genreId);
+        var game = await _factory.SeedGameAsync(genreId);
         var request = new
         {
             name = "Super Mario Bros. 3",
@@ -204,7 +194,7 @@ public class UpdateGameTests : IClassFixture<GameStoreApiFactory>
     public async Task UpdateGame_WithMissingGenreId_ReturnsValidationProblem()
     {
         var genreId = await _factory.SeedGenreAsync();
-        var game = await SeedGameAsync(genreId);
+        var game = await _factory.SeedGameAsync(genreId);
         var request = new
         {
             name = "Super Mario Bros. 3",
@@ -239,7 +229,7 @@ public class UpdateGameTests : IClassFixture<GameStoreApiFactory>
     public async Task UpdateGame_WithNonExistentGenre_ReturnsBadRequest()
     {
         var genreId = await _factory.SeedGenreAsync();
-        var game = await SeedGameAsync(genreId);
+        var game = await _factory.SeedGameAsync(genreId);
         var request = new
         {
             name = "Super Mario Bros. 3",
@@ -257,7 +247,7 @@ public class UpdateGameTests : IClassFixture<GameStoreApiFactory>
     public async Task UpdateGame_CanDeactivateGameAndHideFromCatalog()
     {
         var genreId = await _factory.SeedGenreAsync();
-        var game = await SeedGameAsync(genreId, name: "Celeste", isActive: true);
+        var game = await _factory.SeedGameAsync(genreId, name: "Celeste");
         var request = new
         {
             name = game.Name,
@@ -271,7 +261,7 @@ public class UpdateGameTests : IClassFixture<GameStoreApiFactory>
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-        var body = await response.Content.ReadFromJsonAsync<UpdateGameResponse>(JsonOptions);
+        var body = await response.Content.ReadFromJsonAsync<UpdateGameResponse>(TestJson.Options);
         Assert.NotNull(body);
         Assert.False(body.IsActive);
 
@@ -289,7 +279,7 @@ public class UpdateGameTests : IClassFixture<GameStoreApiFactory>
         var catalogResponse = await _client.GetAsync("/api/games");
         Assert.Equal(HttpStatusCode.OK, catalogResponse.StatusCode);
 
-        var catalog = await catalogResponse.Content.ReadFromJsonAsync<GetGamesResponse>(JsonOptions);
+        var catalog = await catalogResponse.Content.ReadFromJsonAsync<GetGamesResponse>(TestJson.Options);
         Assert.NotNull(catalog);
         Assert.DoesNotContain(catalog.Items, item => item.Id == game.Id);
     }
@@ -298,7 +288,7 @@ public class UpdateGameTests : IClassFixture<GameStoreApiFactory>
     public async Task UpdateGame_CanReactivateGame()
     {
         var genreId = await _factory.SeedGenreAsync();
-        var game = await SeedGameAsync(genreId, isActive: false);
+        var game = await _factory.SeedGameAsync(genreId, isActive: false);
         var request = new
         {
             name = game.Name,
@@ -312,7 +302,7 @@ public class UpdateGameTests : IClassFixture<GameStoreApiFactory>
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-        var body = await response.Content.ReadFromJsonAsync<UpdateGameResponse>(JsonOptions);
+        var body = await response.Content.ReadFromJsonAsync<UpdateGameResponse>(TestJson.Options);
         Assert.NotNull(body);
         Assert.True(body.IsActive);
 
@@ -322,38 +312,5 @@ public class UpdateGameTests : IClassFixture<GameStoreApiFactory>
 
         Assert.NotNull(persisted);
         Assert.True(persisted.IsActive);
-    }
-
-    private async Task<Game> SeedGameAsync(
-        int genreId,
-        string name = "Super Mario Bros. 3",
-        string description = "A classic platform game.",
-        decimal price = 19.99m,
-        bool isActive = true,
-        DateTimeOffset? createdAt = null,
-        DateTimeOffset? updatedAt = null,
-        string? imageUrl = null)
-    {
-        using var scope = _factory.Services.CreateScope();
-        var db = scope.ServiceProvider.GetRequiredService<GameStoreDbContext>();
-        await db.Database.EnsureCreatedAsync();
-
-        var timestamp = createdAt ?? DateTimeOffset.UtcNow;
-        var game = new Game
-        {
-            Id = Guid.NewGuid(),
-            Name = name,
-            Description = description,
-            Price = price,
-            ImageUrl = imageUrl,
-            GenreId = genreId,
-            CreatedAt = timestamp,
-            UpdatedAt = updatedAt ?? timestamp,
-            IsActive = isActive
-        };
-
-        db.Games.Add(game);
-        await db.SaveChangesAsync();
-        return game;
     }
 }

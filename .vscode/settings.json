@@ -1,1 +1,15 @@
-{}
+{
+  "dotnet.defaultSolution": "GameStore.slnx",
+  "js/ts.tsdk.path": "GameStore.React/node_modules/typescript/lib",
+  "js/ts.tsdk.promptToUseWorkspaceVersion": true,
+  "search.exclude": {
+    "**/bin": true,
+    "**/obj": true,
+    "**/node_modules": true,
+    "**/dist": true
+  },
+  "files.exclude": {
+    "**/bin": true,
+    "**/obj": true
+  }
+}

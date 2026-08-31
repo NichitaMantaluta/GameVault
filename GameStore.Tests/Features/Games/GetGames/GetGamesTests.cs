@@ -1,20 +1,11 @@
 using System.Net;
 using System.Net.Http.Json;
-using System.Text.Json;
-using GameStore.Api.Domain.Games;
 using GameStore.Api.Features.Games.GetGames;
-using GameStore.Api.Persistence;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace GameStore.Tests.Features.Games.GetGames;
 
 public class GetGamesTests : IDisposable
 {
-    private static readonly JsonSerializerOptions JsonOptions = new()
-    {
-        PropertyNameCaseInsensitive = true
-    };
-
     private readonly GameStoreApiFactory _factory;
     private readonly HttpClient _client;
 
@@ -33,10 +24,10 @@ public class GetGamesTests : IDisposable
     [Fact]
     public async Task GetGames_ReturnsOnlyActiveGames()
     {
-        var genreId = await SeedGenreAsync();
-        await SeedGameAsync(genreId, "Celeste");
-        await SeedGameAsync(genreId, "Hades");
-        await SeedGameAsync(genreId, "Hidden Gem", isActive: false);
+        var genreId = await _factory.SeedGenreAsync();
+        await _factory.SeedGameAsync(genreId, "Celeste");
+        await _factory.SeedGameAsync(genreId, "Hades");
+        await _factory.SeedGameAsync(genreId, "Hidden Gem", isActive: false);
 
         var body = await GetGamesAsync("/api/games");
 
@@ -50,12 +41,12 @@ public class GetGamesTests : IDisposable
     [Fact]
     public async Task GetGames_PaginatesAndReturnsMetadata()
     {
-        var genreId = await SeedGenreAsync();
-        await SeedGameAsync(genreId, "Animal Crossing");
-        await SeedGameAsync(genreId, "Celeste");
-        await SeedGameAsync(genreId, "Hades");
-        await SeedGameAsync(genreId, "Portal");
-        await SeedGameAsync(genreId, "Zelda");
+        var genreId = await _factory.SeedGenreAsync();
+        await _factory.SeedGameAsync(genreId, "Animal Crossing");
+        await _factory.SeedGameAsync(genreId, "Celeste");
+        await _factory.SeedGameAsync(genreId, "Hades");
+        await _factory.SeedGameAsync(genreId, "Portal");
+        await _factory.SeedGameAsync(genreId, "Zelda");
 
         var body = await GetGamesAsync("/api/games?page=2&pageSize=2");
 
@@ -71,10 +62,10 @@ public class GetGamesTests : IDisposable
     [Fact]
     public async Task GetGames_SearchIsCaseInsensitiveAndFiltersByName()
     {
-        var genreId = await SeedGenreAsync();
-        await SeedGameAsync(genreId, "Super Mario Bros. 3");
-        await SeedGameAsync(genreId, "Mario Kart 8");
-        await SeedGameAsync(genreId, "The Legend of Zelda");
+        var genreId = await _factory.SeedGenreAsync();
+        await _factory.SeedGameAsync(genreId);
+        await _factory.SeedGameAsync(genreId, "Mario Kart 8");
+        await _factory.SeedGameAsync(genreId, "The Legend of Zelda");
 
         var lower = await GetGamesAsync("/api/games?search=mario");
         var upper = await GetGamesAsync("/api/games?search=MARIO");
@@ -88,9 +79,9 @@ public class GetGamesTests : IDisposable
     [Fact]
     public async Task GetGames_EmptyOrWhitespaceSearch_DoesNotFilter()
     {
-        var genreId = await SeedGenreAsync();
-        await SeedGameAsync(genreId, "Celeste");
-        await SeedGameAsync(genreId, "Hades");
+        var genreId = await _factory.SeedGenreAsync();
+        await _factory.SeedGameAsync(genreId, "Celeste");
+        await _factory.SeedGameAsync(genreId, "Hades");
 
         var omitted = await GetGamesAsync("/api/games");
         var empty = await GetGamesAsync("/api/games?search=");
@@ -104,14 +95,14 @@ public class GetGamesTests : IDisposable
     [Fact]
     public async Task GetGames_PageBeyondLast_ReturnsEmptyItems()
     {
-        var genreId = await SeedGenreAsync();
-        await SeedGameAsync(genreId, "Celeste");
-        await SeedGameAsync(genreId, "Hades");
+        var genreId = await _factory.SeedGenreAsync();
+        await _factory.SeedGameAsync(genreId, "Celeste");
+        await _factory.SeedGameAsync(genreId, "Hades");
 
         var response = await _client.GetAsync("/api/games?page=10&pageSize=12");
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-        var body = await response.Content.ReadFromJsonAsync<GetGamesResponse>(JsonOptions);
+        var body = await response.Content.ReadFromJsonAsync<GetGamesResponse>(TestJson.Options);
         Assert.NotNull(body);
         Assert.Equal(10, body.Page);
         Assert.Equal(12, body.PageSize);
@@ -123,10 +114,10 @@ public class GetGamesTests : IDisposable
     [Fact]
     public async Task GetGames_OrdersByNameThenId()
     {
-        var genreId = await SeedGenreAsync();
-        await SeedGameAsync(genreId, "Zelda");
-        await SeedGameAsync(genreId, "Animal Crossing");
-        await SeedGameAsync(genreId, "Celeste");
+        var genreId = await _factory.SeedGenreAsync();
+        await _factory.SeedGameAsync(genreId, "Zelda");
+        await _factory.SeedGameAsync(genreId, "Animal Crossing");
+        await _factory.SeedGameAsync(genreId, "Celeste");
 
         var body = await GetGamesAsync("/api/games");
 
@@ -138,12 +129,11 @@ public class GetGamesTests : IDisposable
     [Fact]
     public async Task GetGames_ResponseContainsExpectedItemFields()
     {
-        var genreId = await SeedGenreAsync();
-        var game = await SeedGameAsync(
+        var genreId = await _factory.SeedGenreAsync();
+        var game = await _factory.SeedGameAsync(
             genreId,
             "Celeste",
             description: "A mountain-climbing platformer.",
-            price: 19.99m,
             imageUrl: "https://upload.wikimedia.org/wikipedia/commons/0/0f/Celeste_box_art_full.png");
 
         var body = await GetGamesAsync("/api/games");
@@ -164,9 +154,9 @@ public class GetGamesTests : IDisposable
     [Fact]
     public async Task GetGames_IncludeInactive_WithoutAdmin_StillReturnsOnlyActive()
     {
-        var genreId = await SeedGenreAsync();
-        await SeedGameAsync(genreId, "Celeste");
-        await SeedGameAsync(genreId, "Hidden Gem", isActive: false);
+        var genreId = await _factory.SeedGenreAsync();
+        await _factory.SeedGameAsync(genreId, "Celeste");
+        await _factory.SeedGameAsync(genreId, "Hidden Gem", isActive: false);
 
         var body = await GetGamesAsync("/api/games?includeInactive=true");
 
@@ -177,15 +167,15 @@ public class GetGamesTests : IDisposable
     [Fact]
     public async Task GetGames_IncludeInactive_AsAdmin_ReturnsActiveAndInactive()
     {
-        var genreId = await SeedGenreAsync();
-        await SeedGameAsync(genreId, "Celeste");
-        await SeedGameAsync(genreId, "Hidden Gem", isActive: false);
+        var genreId = await _factory.SeedGenreAsync();
+        await _factory.SeedGameAsync(genreId, "Celeste");
+        await _factory.SeedGameAsync(genreId, "Hidden Gem", isActive: false);
 
         var admin = _factory.CreateAdminClient();
         var response = await admin.GetAsync("/api/games?includeInactive=true");
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-        var body = await response.Content.ReadFromJsonAsync<GetGamesResponse>(JsonOptions);
+        var body = await response.Content.ReadFromJsonAsync<GetGamesResponse>(TestJson.Options);
         Assert.NotNull(body);
         Assert.Equal(2, body.TotalCount);
         Assert.Contains(body.Items, item => item.Name == "Celeste" && item.IsActive);
@@ -195,15 +185,15 @@ public class GetGamesTests : IDisposable
     [Fact]
     public async Task GetGames_StatusFirstInactive_AsAdmin_OrdersDisabledFirst()
     {
-        var genreId = await SeedGenreAsync();
-        await SeedGameAsync(genreId, "Active Game");
-        await SeedGameAsync(genreId, "Disabled Game", isActive: false);
+        var genreId = await _factory.SeedGenreAsync();
+        await _factory.SeedGameAsync(genreId, "Active Game");
+        await _factory.SeedGameAsync(genreId, "Disabled Game", isActive: false);
 
         var admin = _factory.CreateAdminClient();
         var response = await admin.GetAsync("/api/games?includeInactive=true&statusFirst=inactive");
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-        var body = await response.Content.ReadFromJsonAsync<GetGamesResponse>(JsonOptions);
+        var body = await response.Content.ReadFromJsonAsync<GetGamesResponse>(TestJson.Options);
         Assert.NotNull(body);
         Assert.Equal(2, body.Items.Count);
         Assert.False(body.Items[0].IsActive);
@@ -213,15 +203,15 @@ public class GetGamesTests : IDisposable
     [Fact]
     public async Task GetGames_StatusFirstActive_AsAdmin_OrdersActiveFirst()
     {
-        var genreId = await SeedGenreAsync();
-        await SeedGameAsync(genreId, "Active Game");
-        await SeedGameAsync(genreId, "Disabled Game", isActive: false);
+        var genreId = await _factory.SeedGenreAsync();
+        await _factory.SeedGameAsync(genreId, "Active Game");
+        await _factory.SeedGameAsync(genreId, "Disabled Game", isActive: false);
 
         var admin = _factory.CreateAdminClient();
         var response = await admin.GetAsync("/api/games?includeInactive=true&statusFirst=active");
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-        var body = await response.Content.ReadFromJsonAsync<GetGamesResponse>(JsonOptions);
+        var body = await response.Content.ReadFromJsonAsync<GetGamesResponse>(TestJson.Options);
         Assert.NotNull(body);
         Assert.Equal(2, body.Items.Count);
         Assert.True(body.Items[0].IsActive);
@@ -243,51 +233,8 @@ public class GetGamesTests : IDisposable
         var response = await _client.GetAsync(url);
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-        var body = await response.Content.ReadFromJsonAsync<GetGamesResponse>(JsonOptions);
+        var body = await response.Content.ReadFromJsonAsync<GetGamesResponse>(TestJson.Options);
         Assert.NotNull(body);
         return body;
-    }
-
-    private async Task<int> SeedGenreAsync(string name = "Platformer")
-    {
-        using var scope = _factory.Services.CreateScope();
-        var db = scope.ServiceProvider.GetRequiredService<GameStoreDbContext>();
-        await db.Database.EnsureCreatedAsync();
-
-        var genre = new Genre { Name = name };
-        db.Genres.Add(genre);
-        await db.SaveChangesAsync();
-        return genre.Id;
-    }
-
-    private async Task<Game> SeedGameAsync(
-        int genreId,
-        string name,
-        bool isActive = true,
-        string description = "A video game.",
-        decimal price = 19.99m,
-        string? imageUrl = null)
-    {
-        using var scope = _factory.Services.CreateScope();
-        var db = scope.ServiceProvider.GetRequiredService<GameStoreDbContext>();
-        await db.Database.EnsureCreatedAsync();
-
-        var now = DateTimeOffset.UtcNow;
-        var game = new Game
-        {
-            Id = Guid.NewGuid(),
-            Name = name,
-            Description = description,
-            Price = price,
-            ImageUrl = imageUrl,
-            GenreId = genreId,
-            CreatedAt = now,
-            UpdatedAt = now,
-            IsActive = isActive
-        };
-
-        db.Games.Add(game);
-        await db.SaveChangesAsync();
-        return game;
     }
 }

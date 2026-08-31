@@ -16,10 +16,6 @@ export type AddCartItemRequest = {
   gameId: string
 }
 
-export type UpdateCartItemRequest = {
-  quantity: number
-}
-
 export type CreateOrderItemResponse = {
   gameId: string
   gameName: string

@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react'
-import { ApiValidationError } from '../../games/api/gamesApi'
+import { ApiValidationError } from '../../../api/client'
 import { genreOptionsForSelect } from './genres'
 
 export type GameFormValues = {

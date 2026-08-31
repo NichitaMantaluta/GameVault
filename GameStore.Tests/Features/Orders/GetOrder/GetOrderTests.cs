@@ -12,11 +12,6 @@ namespace GameStore.Tests.Features.Orders.GetOrder;
 
 public class GetOrderTests : IClassFixture<GameStoreApiFactory>
 {
-    private static readonly JsonSerializerOptions JsonOptions = new()
-    {
-        PropertyNameCaseInsensitive = true
-    };
-
     private readonly GameStoreApiFactory _factory;
 
     public GetOrderTests(GameStoreApiFactory factory)
@@ -44,14 +39,14 @@ public class GetOrderTests : IClassFixture<GameStoreApiFactory>
         await client.PostAsJsonAsync("/api/cart/items", new { gameId = game.Id });
 
         var createResponse = await client.PostAsync("/api/orders", null);
-        var created = await createResponse.Content.ReadFromJsonAsync<CreateOrderResponse>(JsonOptions);
+        var created = await createResponse.Content.ReadFromJsonAsync<CreateOrderResponse>(TestJson.Options);
         Assert.NotNull(created);
 
         var response = await client.GetAsync("/api/orders/" + created.Id);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-        var body = await response.Content.ReadFromJsonAsync<GetOrderResponse>(JsonOptions);
+        var body = await response.Content.ReadFromJsonAsync<GetOrderResponse>(TestJson.Options);
         Assert.NotNull(body);
         Assert.Equal(created.Id, body.Id);
         Assert.Equal(OrderStatus.Pending, body.Status);
@@ -89,7 +84,7 @@ public class GetOrderTests : IClassFixture<GameStoreApiFactory>
 
         await owner.PostAsJsonAsync("/api/cart/items", new { gameId = game.Id });
         var createResponse = await owner.PostAsync("/api/orders", null);
-        var created = await createResponse.Content.ReadFromJsonAsync<CreateOrderResponse>(JsonOptions);
+        var created = await createResponse.Content.ReadFromJsonAsync<CreateOrderResponse>(TestJson.Options);
         Assert.NotNull(created);
 
         var response = await other.GetAsync("/api/orders/" + created.Id);
@@ -109,7 +104,7 @@ public class GetOrderTests : IClassFixture<GameStoreApiFactory>
         var client = _factory.CreateUserClient($"keep-{Guid.NewGuid()}");
         await client.PostAsJsonAsync("/api/cart/items", new { gameId = game.Id });
         var createResponse = await client.PostAsync("/api/orders", null);
-        var created = await createResponse.Content.ReadFromJsonAsync<CreateOrderResponse>(JsonOptions);
+        var created = await createResponse.Content.ReadFromJsonAsync<CreateOrderResponse>(TestJson.Options);
         Assert.NotNull(created);
 
         using (var scope = _factory.Services.CreateScope())
@@ -124,7 +119,7 @@ public class GetOrderTests : IClassFixture<GameStoreApiFactory>
         var response = await client.GetAsync("/api/orders/" + created.Id);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        var body = await response.Content.ReadFromJsonAsync<GetOrderResponse>(JsonOptions);
+        var body = await response.Content.ReadFromJsonAsync<GetOrderResponse>(TestJson.Options);
         Assert.NotNull(body);
         Assert.Equal(created.Id, body.Id);
         Assert.Equal(game.Name, Assert.Single(body.Items).GameName);

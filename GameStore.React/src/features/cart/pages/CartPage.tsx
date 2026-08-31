@@ -1,15 +1,11 @@
 import { useRef, useState } from 'react'
 import { navigate } from '../../../app/navigation'
+import { formatUsd } from '../../account/format'
 import { useAuth } from '../../auth/AuthProvider'
 import { createOrder } from '../api/cartApi'
 import { useCart } from '../CartProvider'
 import type { GetCartItemResponse } from '../types/cart'
 import './CartPage.css'
-
-const priceFormatter = new Intl.NumberFormat('en-US', {
-  style: 'currency',
-  currency: 'USD',
-})
 
 const coverTones = ['#1f4d4a', '#3d2b56', '#4a3728', '#1e3a5f', '#4a2c2a', '#2d4a1f']
 
@@ -113,7 +109,7 @@ export function CartPage() {
           </ul>
           <div className="cart-page__summary">
             <p className="cart-page__subtotal">
-              Subtotal <strong>{priceFormatter.format(cart.subtotal)}</strong>
+              Subtotal <strong>{formatUsd(cart.subtotal)}</strong>
             </p>
             {checkoutError ? (
               <p className="cart-page__checkout-error" role="alert">
@@ -180,7 +176,7 @@ function CartLineItem({ item, disabled, onRemove }: CartLineItemProps) {
       </div>
       <div className="cart-item__details">
         <h2 className="cart-item__name">{item.name}</h2>
-        <p className="cart-item__price">{priceFormatter.format(item.price)}</p>
+        <p className="cart-item__price">{formatUsd(item.price)}</p>
         <div className="cart-item__actions">
           <button
             type="button"

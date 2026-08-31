@@ -23,7 +23,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\GameStore.Api\GameStore.Api.csproj" />
-    <ProjectReference Include="..\GameStore.Worker\GameStore.Worker.csproj" />
   </ItemGroup>
 
   <ItemGroup>

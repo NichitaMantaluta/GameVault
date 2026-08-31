@@ -12,11 +12,6 @@ namespace GameStore.Tests.Features.Orders.StripeWebhook;
 
 public class StripeWebhookTests : IClassFixture<GameStoreApiFactory>
 {
-    private static readonly JsonSerializerOptions JsonOptions = new()
-    {
-        PropertyNameCaseInsensitive = true
-    };
-
     private readonly GameStoreApiFactory _factory;
 
     public StripeWebhookTests(GameStoreApiFactory factory)
@@ -43,7 +38,7 @@ public class StripeWebhookTests : IClassFixture<GameStoreApiFactory>
         var order = await db.Orders.SingleAsync(existing => existing.Id == created.Id);
         Assert.Equal(OrderStatus.Completed, order.Status);
 
-        var cart = await client.GetFromJsonAsync<GetCartResponse>("/api/cart", JsonOptions);
+        var cart = await client.GetFromJsonAsync<GetCartResponse>("/api/cart", TestJson.Options);
         Assert.NotNull(cart);
         Assert.Empty(cart.Items);
         Assert.False(await db.CartItems.AnyAsync(item => item.GameId == gameId));
@@ -114,7 +109,7 @@ public class StripeWebhookTests : IClassFixture<GameStoreApiFactory>
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-        var cart = await client.GetFromJsonAsync<GetCartResponse>("/api/cart", JsonOptions);
+        var cart = await client.GetFromJsonAsync<GetCartResponse>("/api/cart", TestJson.Options);
         Assert.NotNull(cart);
         Assert.Equal(gameId, Assert.Single(cart.Items).GameId);
     }
@@ -163,7 +158,7 @@ public class StripeWebhookTests : IClassFixture<GameStoreApiFactory>
 
         var createResponse = await client.PostAsync("/api/orders", null);
         Assert.Equal(HttpStatusCode.Created, createResponse.StatusCode);
-        var created = await createResponse.Content.ReadFromJsonAsync<CreateOrderResponse>(JsonOptions);
+        var created = await createResponse.Content.ReadFromJsonAsync<CreateOrderResponse>(TestJson.Options);
         Assert.NotNull(created);
         Assert.Equal(OrderStatus.Pending, created.Status);
 

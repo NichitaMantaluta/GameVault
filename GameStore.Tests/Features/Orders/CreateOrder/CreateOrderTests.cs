@@ -15,11 +15,6 @@ namespace GameStore.Tests.Features.Orders.CreateOrder;
 
 public class CreateOrderTests : IClassFixture<GameStoreApiFactory>
 {
-    private static readonly JsonSerializerOptions JsonOptions = new()
-    {
-        PropertyNameCaseInsensitive = true
-    };
-
     private readonly GameStoreApiFactory _factory;
 
     public CreateOrderTests(GameStoreApiFactory factory)
@@ -61,7 +56,7 @@ public class CreateOrderTests : IClassFixture<GameStoreApiFactory>
 
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
 
-        var body = await response.Content.ReadFromJsonAsync<CreateOrderResponse>(JsonOptions);
+        var body = await response.Content.ReadFromJsonAsync<CreateOrderResponse>(TestJson.Options);
         Assert.NotNull(body);
         Assert.NotEqual(Guid.Empty, body.Id);
         Assert.Equal(OrderStatus.Pending, body.Status);
@@ -88,7 +83,7 @@ public class CreateOrderTests : IClassFixture<GameStoreApiFactory>
         Assert.Contains(paymentRequest.LineItems, item => item.Name == mario.Name && item.UnitAmount == 19.99m);
         Assert.Contains(paymentRequest.LineItems, item => item.Name == zelda.Name && item.UnitAmount == 59.99m);
 
-        var cart = await client.GetFromJsonAsync<GetCartResponse>("/api/cart", JsonOptions);
+        var cart = await client.GetFromJsonAsync<GetCartResponse>("/api/cart", TestJson.Options);
         Assert.NotNull(cart);
         Assert.Equal(2, cart.Items.Count);
 
@@ -210,7 +205,7 @@ public class CreateOrderTests : IClassFixture<GameStoreApiFactory>
 
         await client.PostAsJsonAsync("/api/cart/items", new { gameId = owned.Id });
         var first = await client.PostAsync("/api/orders", null);
-        var created = await first.Content.ReadFromJsonAsync<CreateOrderResponse>(JsonOptions);
+        var created = await first.Content.ReadFromJsonAsync<CreateOrderResponse>(TestJson.Options);
         Assert.NotNull(created);
 
         var webhook = await StripeWebhookTestHelper.PostCheckoutSessionCompletedAsync(
@@ -226,6 +221,10 @@ public class CreateOrderTests : IClassFixture<GameStoreApiFactory>
         var response = await client.PostAsync("/api/orders", null);
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        var problem = await response.Content.ReadFromJsonAsync<JsonElement>(TestJson.Options);
+        Assert.Equal(
+            $"Game '{owned.Name}' is already owned.",
+            problem.GetProperty("detail").GetString());
 
         using var scope = _factory.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<GameStoreDbContext>();
@@ -233,7 +232,7 @@ public class CreateOrderTests : IClassFixture<GameStoreApiFactory>
         Assert.Equal(1, await db.OrderItems.CountAsync(item => item.GameId == owned.Id));
         Assert.False(await db.OrderItems.AnyAsync(item => item.GameId == extra.Id));
 
-        var cart = await client.GetFromJsonAsync<GetCartResponse>("/api/cart", JsonOptions);
+        var cart = await client.GetFromJsonAsync<GetCartResponse>("/api/cart", TestJson.Options);
         Assert.NotNull(cart);
         Assert.Equal(2, cart.Items.Count);
         Assert.Contains(cart.Items, item => item.GameId == owned.Id);
@@ -250,7 +249,7 @@ public class CreateOrderTests : IClassFixture<GameStoreApiFactory>
 
         await client.PostAsJsonAsync("/api/cart/items", new { gameId = game.Id });
         var createResponse = await client.PostAsync("/api/orders", null);
-        var created = await createResponse.Content.ReadFromJsonAsync<CreateOrderResponse>(JsonOptions);
+        var created = await createResponse.Content.ReadFromJsonAsync<CreateOrderResponse>(TestJson.Options);
         Assert.NotNull(created);
 
         using (var scope = _factory.Services.CreateScope())
@@ -264,7 +263,7 @@ public class CreateOrderTests : IClassFixture<GameStoreApiFactory>
         }
 
         var orderResponse = await client.GetAsync("/api/orders/" + created.Id);
-        var order = await orderResponse.Content.ReadFromJsonAsync<GetOrderResponse>(JsonOptions);
+        var order = await orderResponse.Content.ReadFromJsonAsync<GetOrderResponse>(TestJson.Options);
 
         Assert.Equal(HttpStatusCode.OK, orderResponse.StatusCode);
         Assert.NotNull(order);
@@ -304,7 +303,7 @@ public class CreateOrderTests : IClassFixture<GameStoreApiFactory>
 
     private static async Task AssertCartContainsGameAsync(HttpClient client, Guid gameId)
     {
-        var cart = await client.GetFromJsonAsync<GetCartResponse>("/api/cart", JsonOptions);
+        var cart = await client.GetFromJsonAsync<GetCartResponse>("/api/cart", TestJson.Options);
         Assert.NotNull(cart);
         var item = Assert.Single(cart.Items);
         Assert.Equal(gameId, item.GameId);

@@ -12,11 +12,6 @@ namespace GameStore.Tests.Features.Orders.GetOrders;
 
 public class GetOrdersTests : IClassFixture<GameStoreApiFactory>
 {
-    private static readonly JsonSerializerOptions JsonOptions = new()
-    {
-        PropertyNameCaseInsensitive = true
-    };
-
     private readonly GameStoreApiFactory _factory;
 
     public GetOrdersTests(GameStoreApiFactory factory)
@@ -44,7 +39,7 @@ public class GetOrdersTests : IClassFixture<GameStoreApiFactory>
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-        var body = await response.Content.ReadFromJsonAsync<GetOrdersResponse>(JsonOptions);
+        var body = await response.Content.ReadFromJsonAsync<GetOrdersResponse>(TestJson.Options);
         Assert.NotNull(body);
         Assert.Empty(body.Items);
     }
@@ -63,7 +58,7 @@ public class GetOrdersTests : IClassFixture<GameStoreApiFactory>
 
         await owner.PostAsJsonAsync("/api/cart/items", new { gameId = ownerGame1.Id });
         var firstResponse = await owner.PostAsync("/api/orders", null);
-        var first = await firstResponse.Content.ReadFromJsonAsync<CreateOrderResponse>(JsonOptions);
+        var first = await firstResponse.Content.ReadFromJsonAsync<CreateOrderResponse>(TestJson.Options);
         Assert.NotNull(first);
         Assert.Equal(HttpStatusCode.OK, (await StripeWebhookTestHelper.PostCheckoutSessionCompletedAsync(
             anonymous,
@@ -73,7 +68,7 @@ public class GetOrdersTests : IClassFixture<GameStoreApiFactory>
 
         await owner.PostAsJsonAsync("/api/cart/items", new { gameId = ownerGame2.Id });
         var secondResponse = await owner.PostAsync("/api/orders", null);
-        var second = await secondResponse.Content.ReadFromJsonAsync<CreateOrderResponse>(JsonOptions);
+        var second = await secondResponse.Content.ReadFromJsonAsync<CreateOrderResponse>(TestJson.Options);
         Assert.NotNull(second);
         Assert.Equal(HttpStatusCode.OK, (await StripeWebhookTestHelper.PostCheckoutSessionCompletedAsync(
             anonymous,
@@ -97,7 +92,7 @@ public class GetOrdersTests : IClassFixture<GameStoreApiFactory>
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-        var body = await response.Content.ReadFromJsonAsync<GetOrdersResponse>(JsonOptions);
+        var body = await response.Content.ReadFromJsonAsync<GetOrdersResponse>(TestJson.Options);
         Assert.NotNull(body);
         Assert.Equal(2, body.Items.Count);
         Assert.Equal(second.Id, body.Items[0].Id);
@@ -115,7 +110,7 @@ public class GetOrdersTests : IClassFixture<GameStoreApiFactory>
         Assert.DoesNotContain("gameName", json, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("gameId", json, StringComparison.OrdinalIgnoreCase);
 
-        var otherList = await other.GetFromJsonAsync<GetOrdersResponse>("/api/orders", JsonOptions);
+        var otherList = await other.GetFromJsonAsync<GetOrdersResponse>("/api/orders", TestJson.Options);
         Assert.NotNull(otherList);
         var otherOrder = Assert.Single(otherList.Items);
         Assert.DoesNotContain(body.Items, item => item.Id == otherOrder.Id);

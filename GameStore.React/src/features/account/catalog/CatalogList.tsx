@@ -1,15 +1,11 @@
 import { useEffect, useState } from 'react'
 import { navigate } from '../../../app/navigation'
+import { formatUsd } from '../format'
 import { ADMIN_CATALOG_PAGE_SIZE, getGames } from '../../games/api/gamesApi'
 import { Pagination } from '../../games/components/Pagination'
 import { SearchInput } from '../../games/components/SearchInput'
 import type { GetGamesItem, GetGamesResponse } from '../../games/types/games'
 import { consumeCatalogFeedback } from './feedback'
-
-const priceFormatter = new Intl.NumberFormat('en-US', {
-  style: 'currency',
-  currency: 'USD',
-})
 
 const SEARCH_DELAY_MS = 400
 
@@ -202,7 +198,7 @@ function CatalogRow({ game }: { game: GetGamesItem }) {
         </div>
       </td>
       <td>{game.genreName}</td>
-      <td>{priceFormatter.format(game.price)}</td>
+      <td>{formatUsd(game.price)}</td>
       <td>
         <span
           className={

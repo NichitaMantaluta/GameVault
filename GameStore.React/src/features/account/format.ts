@@ -16,6 +16,10 @@ export function formatMoney(amount: number, currency: string): string {
   }
 }
 
+export function formatUsd(amount: number): string {
+  return formatMoney(amount, 'USD')
+}
+
 export function formatOrderDate(value: string): string {
   const date = new Date(value)
   if (Number.isNaN(date.getTime())) {
