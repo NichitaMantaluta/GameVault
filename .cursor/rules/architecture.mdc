@@ -10,8 +10,8 @@ This is an ASP.NET Core GameStore modular monolith using **Vertical Slice Archit
 ## Projects
 
 - `GameStore.Api` — HTTP/application use cases (features organized by use case)
-- `GameStore.Worker` — asynchronous order processing only
-- Frontend — React + TypeScript (when present)
+- `GameStore.Tests` — API integration tests
+- `GameStore.React` — storefront SPA (React + TypeScript)
 - Do not reorganize into Clean Architecture or Controller/Service/Repository layers
 
 ## Tech stack

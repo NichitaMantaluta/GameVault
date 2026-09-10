@@ -39,7 +39,6 @@ This README is written so someone can understand the project quickly and run it 
 ```text
 GameStore/
 ├── GameStore.Api/          # HTTP API (games, cart, orders, Stripe webhook)
-├── GameStore.Worker/       # Empty placeholder project (not used in the demo flow)
 ├── GameStore.Tests/        # API integration tests
 ├── GameStore.React/        # Storefront SPA
 ├── keycloak/               # Realm import + custom login theme
@@ -233,8 +232,6 @@ docker compose down
 docker compose down -v
 ```
 
-You do **not** need to run `GameStore.Worker` for the demo. It is an unused placeholder.
-
 ---
 
 ## API surface (overview)
@@ -256,7 +253,6 @@ OpenAPI is enabled in Development on the API.
 - **Vertical slices:** each use case lives under `Features/{Area}/{UseCase}/` with endpoint + request/response types nearby.
 - **Auth:** Keycloak issues JWTs; the API validates issuer/audience and maps realm roles to the `role` claim. Admins need the `Admin` role.
 - **Images:** stored as URL strings (seed data and admin form use public HTTPS image URLs). There is no file-upload or blob storage service.
-- **Worker:** included in the solution as a stub only; the live checkout path does not depend on it.
 - **Soft delete:** disabling a game hides it from the public catalog without removing history.
 - **Scope:** this is a local portfolio demo. Cloud hosting, managed identity, and messaging are out of scope for the current codebase.
 
