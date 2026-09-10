@@ -91,10 +91,14 @@ dotnet run --project GameStore.Api
 Seed needs tables from migrations, so run this after the API has started once:
 
 ```bash
+# via Compose (no local psql install needed) — PowerShell:
+Get-Content -Raw GameStore.Api/Persistence/seed-dev-data.sql | docker compose exec -T postgres psql -U postgres -d gamestore
+
+# or with local psql:
 psql -h localhost -U postgres -d gamestore -f GameStore.Api/Persistence/seed-dev-data.sql
 ```
 
-Re-running truncates and reloads genres/games. For a empty DB: `docker compose down -v`, then compose up → API → seed.
+Re-running truncates and reloads genres/games. For an empty DB: `docker compose down -v`, then compose up → API → seed.
 
 ### 5. Start the React app
 
