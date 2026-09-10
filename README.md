@@ -30,7 +30,7 @@ This README is written so someone can understand the project quickly and run it 
 | Auth | Keycloak 26 (local Docker) |
 | Payments | Stripe Checkout + webhooks (`Stripe.net`, test mode) |
 | Tests | xUnit, Microsoft.AspNetCore.Mvc.Testing |
-| Local containers | Docker Compose for Keycloak; Postgres via `docker run` |
+| Local containers | Docker Compose (PostgreSQL + Keycloak) |
 
 ---
 
@@ -43,7 +43,7 @@ GameStore/
 ├── GameStore.Tests/        # API integration tests
 ├── GameStore.React/        # Storefront SPA
 ├── keycloak/               # Realm import + custom login theme
-├── docker-compose.yml      # Keycloak only
+├── docker-compose.yml      # PostgreSQL + Keycloak
 ├── .env.example            # Safe config template
 └── .env                    # Your local secrets (gitignored)
 ```
@@ -97,7 +97,7 @@ You do **not** need an Azure account or any cloud resources to run this project.
 
 ## Quick start (local)
 
-Open **four** terminals (or run services in the background). Order matters: database and Keycloak first, then API, then frontend, then Stripe webhook forwarding.
+Order: env → Compose (Postgres + Keycloak) → API (migrations) → seed → React. Stripe CLI is optional and separate.
 
 ### 1. Clone and configure environment
 
@@ -109,56 +109,56 @@ cd GameStore
 Create a `.env` file in the **repo root** (same folder as `docker-compose.yml`) from the template:
 
 ```bash
+# bash / macOS / Linux
 cp .env.example .env
+
+# PowerShell
+Copy-Item .env.example .env
 ```
 
-Open `.env` and replace the Stripe placeholders with your **test** keys (`Stripe__SecretKey`, `Stripe__WebhookSecret`). The other values in `.env.example` work for the local setup described below.
+Open `.env` and replace the Stripe placeholders with your **test** keys (`Stripe__SecretKey`, `Stripe__WebhookSecret`) when you use payments. The other values in `.env.example` work for the local setup below.
 
 > The API and Vite both load this root `.env`. Never commit real secrets.
 
-### 2. Start PostgreSQL
-
-Postgres is **not** in `docker-compose.yml`. Example with Alpine:
-
-```bash
-docker run -d --name gamestore-postgres ^
-  -e POSTGRES_USER=postgres ^
-  -e POSTGRES_PASSWORD=postgres ^
-  -e POSTGRES_DB=gamestore ^
-  -p 5432:5432 ^
-  postgres:16-alpine
-```
-
-(On macOS/Linux, use `\` instead of `^` for line continuations.)
-
-### 3. Start Keycloak
+### 2. Start PostgreSQL + Keycloak
 
 ```bash
 docker compose up -d
 ```
 
-Wait until Keycloak is healthy (`http://localhost:8080`). On first start it imports the `GameStore` realm and custom theme.
+Wait until both services are healthy:
 
-### 4. Start the API
+```bash
+docker compose ps
+```
+
+- Postgres: `localhost:5432` (credentials from `.env` `POSTGRES_*`)
+- Keycloak: `http://localhost:8080` (on first start it imports the `GameStore` realm and custom theme)
+
+Data persists in the Compose volume `postgres_data`. Seed SQL is **not** mounted into `/docker-entrypoint-initdb.d/` — the script truncates/inserts into tables that EF migrations create, so auto-init would fail on an empty database.
+
+### 3. Start the API
 
 ```bash
 dotnet run --project GameStore.Api
 ```
 
 - URL: `http://localhost:5261`
-- Development mode applies EF migrations on startup
+- Development mode applies EF migrations on startup (creates schema)
 
-### 5. Seed catalog data (once)
+### 4. Seed catalog data (once, after migrations)
 
-With Postgres running, apply the seed script (12 genres, 50 sample games):
+With the API having run at least once (tables exist), apply the seed script (12 genres, 50 sample games):
 
 ```bash
 psql -h localhost -U postgres -d gamestore -f GameStore.Api/Persistence/seed-dev-data.sql
 ```
 
-Or run the SQL from any Postgres client against database `gamestore`.
+Or run the SQL from any Postgres client against database `gamestore`. Re-running truncates and reloads genres/games.
 
-### 6. Start the React app
+If you ever need a fully empty Postgres volume again: `docker compose down -v` (destroys DB data), then compose up → start API once → seed.
+
+### 5. Start the React app
 
 ```bash
 cd GameStore.React
@@ -168,7 +168,9 @@ npm run dev
 
 - Storefront: `http://localhost:5173`
 
-### 7. Forward Stripe webhooks (needed for completed orders)
+### 6. Forward Stripe webhooks (optional — needed for completed orders)
+
+Stripe is **not** started by Compose. When you want checkout → completed orders:
 
 ```bash
 stripe listen --forward-to http://localhost:5261/api/payments/stripe/webhook
@@ -177,7 +179,6 @@ stripe listen --forward-to http://localhost:5261/api/payments/stripe/webhook
 Copy the `whsec_...` signing secret from the CLI into `.env` as `Stripe__WebhookSecret`, then **restart the API**.
 
 Without this step, checkout can create a Stripe session, but orders remain `Pending` and ownership / cart clearing will not run.
-
 ---
 
 ## Demo accounts (Keycloak)
@@ -225,11 +226,11 @@ dotnet test
 # Build frontend
 cd GameStore.React && npm run build
 
-# Lint frontend
-cd GameStore.React && npm run lint
-
-# Stop Keycloak
+# Stop Postgres + Keycloak (keeps DB volume)
 docker compose down
+
+# Stop and wipe Postgres data volume
+docker compose down -v
 ```
 
 You do **not** need to run `GameStore.Worker` for the demo. It is an unused placeholder.
@@ -265,7 +266,8 @@ OpenAPI is enabled in Development on the API.
 
 | Problem | What to check |
 |---|---|
-| API won’t start / DB errors | Postgres container running? `.env` `POSTGRES_*` values match? |
+| API won’t start / DB errors | `docker compose ps` — Postgres healthy? `.env` `POSTGRES_*` values match Compose? |
+| Empty catalog after first run | Start API once (migrations), then run `seed-dev-data.sql` (see Quick start §4) |
 | Login fails / CORS / redirect issues | Keycloak up on `8080`? Realm imported? Vite on `5173`? |
 | 401 on API calls | Signed in? Token audience `gamestore`? `Authentication__Authority` correct? |
 | Checkout works but order stays Pending | Stripe CLI listening? `Stripe__WebhookSecret` matches CLI secret? API restarted? |

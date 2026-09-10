@@ -1,4 +1,22 @@
 services:
+  postgres:
+    image: postgres:16-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      # Official image expects POSTGRES_USER / POSTGRES_DB; map from API .env names
+      POSTGRES_USER: ${POSTGRES_USERNAME}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DATABASE}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
   keycloak:
     image: quay.io/keycloak/keycloak:26.7.2
     command: ["start-dev", "--import-realm"]
@@ -16,3 +34,6 @@ services:
       timeout: 5s
       retries: 30
       start_period: 20s
+
+volumes:
+  postgres_data:
